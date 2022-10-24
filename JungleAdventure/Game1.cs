@@ -17,8 +17,8 @@ namespace JungleAdventure
         private int boxHeight = 32;
 
         private Texture2D playerTexture;
-        private int playerSpeed = 4;
-        private int playerHeight = 64;
+        private int playerSpeed = 3;
+        private int playerHeight = 48;
         private int playerWidth = 32;
         private int playerX = 512;
         private int playerY = 64;
@@ -45,28 +45,42 @@ namespace JungleAdventure
 
         static bool canMoveToTheLeft;
         static bool canMoveToTheRight;
-        static bool borderRight;
+
+        static int borderRight = GraphicsDeviceManager.DefaultBackBufferWidth / 100 * 60;
+        static int borderLeft = GraphicsDeviceManager.DefaultBackBufferWidth / 100 * 40;
+        static bool touchesBorderRight;
+        static bool touchesBorderLeft;
+
+
+        float timer; // A timer that stores milliseconds.
+        int threshold; // An int that is the threshold for the timer.
+        
+        Rectangle[] sourceRectangles;// A Rectangle array that stores sourceRectangles for animations.
+        int previousAnimationIndex; // These bytes tell the spriteBatch.Draw() what sourceRectangle to display. 
+        int currentAnimationIndex;
+
+
         #endregion 
 
         #region Worlds
-        static bool worldCreated = false;
+        static int worldOffsetX;
 
         static int[,] world = new int[,] {
-            { 1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1 },
-            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 },
-            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0 },
-            { 1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0 },
-            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
-            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
-            { 1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0 },
-            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
-            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0 },
-            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0 },
-            { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 },
-            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
-            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
-            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 },
-            { 1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1 }};
+            { 1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1 },
+            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 },
+            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0 },
+            { 1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0 },
+            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
+            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
+            { 1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0 },
+            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
+            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0 },
+            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0 },
+            { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 },
+            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
+            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
+            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 },
+            { 1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1 }};
 
         #endregion
 
@@ -89,16 +103,15 @@ namespace JungleAdventure
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             boxTexture = Content.Load<Texture2D>("dirt");
-            playerTexture = Content.Load<Texture2D>("leonZwerg");
-
-            LoadWorld();
+            playerTexture = Content.Load<Texture2D>("SpriteSheet");
             
+            AnimationLoadContent();
             // TODO: use this.Content to load your game content here
         }
         protected override void Update(GameTime gameTime)
         {
             // TODO: Add your update logic here
-
+            SetPlayerMovementBounds();
             PlayerInput();
             BasicMovement();
             Collision();
@@ -117,10 +130,8 @@ namespace JungleAdventure
             spriteBatch.Draw(playerTexture, player, Color.AliceBlue);
             
             DrawWorld();
-           
+            AnimationUpdate(gameTime);
             spriteBatch.End();
-
-            // TODO: Add your drawing code here
 
             base.Draw(gameTime);
         }
@@ -132,7 +143,6 @@ namespace JungleAdventure
             colLeftTop = new Rectangle(playerX - playerSpeed, playerY, playerSpeed, playerHeight); // Left Top Collision
             colRightTop = new Rectangle(playerX + playerWidth, playerY, playerSpeed, playerHeight); // Left Top Collision
         }
-
         private void Collision()
         {
             SetCollision();
@@ -206,14 +216,35 @@ namespace JungleAdventure
             }
         }
 
+        public void SetPlayerMovementBounds()
+        {
+            if (playerX + playerWidth > borderRight)
+            {
+                touchesBorderRight = true;
+            }
+            else
+            {
+                touchesBorderRight = false;
+            }
+
+            if (playerX < borderLeft)
+            {
+                touchesBorderLeft = true;
+            }
+            else
+            {
+                touchesBorderLeft = false;
+            }
+        }
+
         public void BasicMovement()
         {
             //basic left & right movement
-            if (left && canMoveToTheLeft)
+            if (left && canMoveToTheLeft && !touchesBorderLeft)
             {
                 playerX -= playerSpeed;
             }
-            else if (right && canMoveToTheRight)
+            else if (right && canMoveToTheRight && !touchesBorderRight)
             {
                 playerX += playerSpeed;
             }
@@ -256,26 +287,76 @@ namespace JungleAdventure
             //move player according to gravity's value
             playerY += gravity;
         }
-        public void LoadWorld()
+        public void DrawWorld()
         {
+            SetWorldOffset();
+            liBlocks.Clear();
             for (int y = 0; y < world.GetLength(0); y++)
             {
                 for (int x = 0; x < world.GetLength(1); x++)
                 {
                     if (world[y, x] == 1) // normal block
                     {
-                        Rectangle block = new Rectangle(x * boxWidth, y * boxHeight, boxWidth, boxHeight);
+                        Rectangle block = new Rectangle(x * boxWidth + worldOffsetX, y * boxHeight, boxWidth, boxHeight);
+                        spriteBatch.Draw(boxTexture, block, Color.AliceBlue);
                         liBlocks.Add(block);
                     }
                 }
             }
         }
-        public void DrawWorld()
+        public void SetWorldOffset()
         {
-            foreach (Rectangle r in liBlocks)
+            if (touchesBorderLeft && left)
             {
-                spriteBatch.Draw(boxTexture, r, Color.AliceBlue);
+                worldOffsetX += playerSpeed;
             }
+            else if (touchesBorderRight && right)
+            {
+                worldOffsetX -= playerSpeed;
+            }
+        }
+
+
+        public void AnimationLoadContent()
+        {
+            // Set a default timer value.
+            timer = 0;
+            // Set an initial threshold of 250ms, you can change this to alter the speed of the animation (lower number = faster animation).
+            threshold = 250;
+            // Three sourceRectangles contain the coordinates of Alex's three down-facing sprites on the charaset.
+            sourceRectangles = new Rectangle[3];
+            sourceRectangles[0] = new Rectangle(0, 0, 550, 750);
+            sourceRectangles[1] = new Rectangle(603, 0, 550, 750);
+
+            // This tells the animation to start on the left-side sprite.
+            previousAnimationIndex = 2;
+            currentAnimationIndex = 1;
+        }
+
+        public void AnimationUpdate(GameTime gameTime)
+        {
+            // Check if the timer has exceeded the threshold.
+            if (timer > threshold)
+            {
+                // If Alex is in the middle sprite of the animation.
+                if (currentAnimationIndex == 1)
+                {
+                    currentAnimationIndex = 0;
+                }
+                else
+                {
+                    currentAnimationIndex = 1;
+                }
+                // Reset the timer.
+                timer = 0;
+            }
+            // If the timer has not reached the threshold, then add the milliseconds that have past since the last Update() to the timer.
+            else
+            {
+                timer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+            }
+
+
         }
     }
 }
