@@ -32,7 +32,7 @@ namespace JungleAdventure.Blocks
         {
             float tileNumberX = (float)p.X / (float)tileWidth;
             float fractionNumber = (float)tileNumberX - (float)Math.Floor(tileNumberX);
-            float temp2 = fractionNumber * tileWidth;
+            float temp2 = fractionNumber * (float)tileWidth;
             float posInSlopeY = (float)k * (float)temp2 + (float)d;
             float tileNumberY = (float)p.Y / (float)tileHeight;
             float fullTileNumberY = (int)Math.Ceiling(tileNumberY);

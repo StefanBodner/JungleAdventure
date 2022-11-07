@@ -18,6 +18,7 @@ namespace JungleAdventure
 
         Texture2D spriteSheet;
 
+        private Texture2D slope;
         private Texture2D boxTexture;
         private int boxWidth = 32;
         private int boxHeight = 32;
@@ -79,8 +80,8 @@ namespace JungleAdventure
             { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
             { 1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0 },
             { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
-            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0 },
-            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0 },
+            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0 },
+            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0 },
             { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 },
             { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
             { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
@@ -116,6 +117,7 @@ namespace JungleAdventure
             boxTexture = Content.Load<Texture2D>("dirt");
             playerTexture = Content.Load<Texture2D>("SpriteSheet");
             spriteSheet = Content.Load<Texture2D>("dirt");
+            slope = Content.Load<Texture2D>("Slope");
 
             AnimationLoadContent();
         }
@@ -150,7 +152,7 @@ namespace JungleAdventure
             colTop = new Rectangle(playerX, playerY - playerSpeed, playerWidth, playerSpeed); //Top Collision
             colLeft = new Rectangle(playerX - playerSpeed, playerY, playerSpeed, playerHeight); // Left Top Collision
             colRight = new Rectangle(playerX + playerWidth, playerY, playerSpeed, playerHeight); // Left Top Collision
-            playerBotCenter = new Rectangle(playerX + playerWidth, playerY + playerHeight - 1, 1, 1); //Bottom Center Collision
+            playerBotCenter = new Rectangle(playerX + playerWidth / 2, playerY + playerHeight - 1, 1, 1); //Bottom Center Collision
         }
 
         private void CheckCollision()
@@ -213,22 +215,22 @@ namespace JungleAdventure
             {
                 Exit();
             }
-            if (Keyboard.GetState().IsKeyDown(Keys.A))
+            if (Keyboard.GetState().IsKeyDown(Keys.A) || Keyboard.GetState().IsKeyDown(Keys.Left))
             {
                 left = true;
             }
             else { left = false; }
-            if (Keyboard.GetState().IsKeyDown(Keys.D))
+            if (Keyboard.GetState().IsKeyDown(Keys.D) || Keyboard.GetState().IsKeyDown(Keys.Right))
             {
                 right = true;
             }
             else { right = false; }
-            if (Keyboard.GetState().IsKeyDown(Keys.W))
+            if (Keyboard.GetState().IsKeyDown(Keys.W) || Keyboard.GetState().IsKeyDown(Keys.Up) || Keyboard.GetState().IsKeyDown(Keys.Space))
             {
                 up = true;
             }
             else { up = false; }
-            if (Keyboard.GetState().IsKeyDown(Keys.S))
+            if (Keyboard.GetState().IsKeyDown(Keys.S) || Keyboard.GetState().IsKeyDown(Keys.Down))
             {
                 down = true;
             }
@@ -338,7 +340,7 @@ namespace JungleAdventure
                     }
                     else if (world[y, x] == 2) // steep slope
                     {
-                        Slope s = new Slope(x * boxWidth + worldOffsetX, y * boxHeight, 1f, 0, spriteSheet, dirtBlock);
+                        Slope s = new Slope(x * boxWidth + worldOffsetX, y * boxHeight, 1f, 0, slope, dirtBlock);
                         s.DrawBlock(spriteBatch);
                         liSlopes.Add(s);
                     }
@@ -361,6 +363,7 @@ namespace JungleAdventure
         {
             Rectangle player = new Rectangle(playerX, playerY, playerWidth, playerHeight);
             spriteBatch.Draw(playerTexture, player, sourceRectangles[currentAnimationIndex], Color.White);
+            spriteBatch.Draw(boxTexture, playerBotCenter, Color.Red);
         }
         #endregion
 
