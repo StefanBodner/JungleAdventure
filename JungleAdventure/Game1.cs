@@ -1,6 +1,8 @@
-﻿using Microsoft.Xna.Framework;
+﻿using JungleAdventure.Blocks;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
 using System.Collections.Generic;
 
 namespace JungleAdventure
@@ -11,7 +13,11 @@ namespace JungleAdventure
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
 
-        static List<Rectangle> liBlocks = new List<Rectangle>();
+        static List<Block> liBlocks = new List<Block>();
+        static List<Slope> liSlopes = new List<Slope>();
+
+        Texture2D spriteSheet;
+
         private Texture2D boxTexture;
         private int boxWidth = 32;
         private int boxHeight = 32;
@@ -26,6 +32,7 @@ namespace JungleAdventure
         public int minJumpTicks = 5;
         public int force = -17;
         public int gravity = 0;
+        
         public bool inAir = true;
         public bool headroom = true;
 
@@ -34,20 +41,17 @@ namespace JungleAdventure
         public bool up;
         public bool down;
 
-        static Rectangle colBot;
+        static Rectangle colBottom;
         static Rectangle colTop;
-        static Rectangle colLeftTop;
-        static Rectangle colRightTop;
-        static Rectangle colLeftBot;
-        static Rectangle colRightBot;
-
-        static Point midBotPlayer;
+        static Rectangle colLeft;
+        static Rectangle colRight;
+        static Rectangle playerBotCenter;
 
         static bool canMoveToTheLeft;
         static bool canMoveToTheRight;
 
-        static int borderRight = GraphicsDeviceManager.DefaultBackBufferWidth / 100 * 60;
-        static int borderLeft = GraphicsDeviceManager.DefaultBackBufferWidth / 100 * 40;
+        static int borderRight;
+        static int borderLeft;
         static bool touchesBorderRight;
         static bool touchesBorderLeft;
 
@@ -59,7 +63,8 @@ namespace JungleAdventure
         int previousAnimationIndex; // These bytes tell the spriteBatch.Draw() what sourceRectangle to display. 
         int currentAnimationIndex;
 
-
+        //Texture Coordinates SpriteSheet
+        Rectangle dirtBlock = new Rectangle(0,0,32,32);
         #endregion 
 
         #region Worlds
@@ -74,114 +79,134 @@ namespace JungleAdventure
             { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
             { 1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0 },
             { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
-            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0 },
-            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0 },
-            { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 },
-            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
-            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
-            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 },
-            { 1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1 }};
+            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0 },
+            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0 },
+            { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 },
+            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
+            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
+            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 },
+            { 1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1 }};
 
         #endregion
 
+        #region Game Initialization
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
+            //graphics.PreferredBackBufferWidth = 640;  // set this value to the desired width of your window
+            //graphics.PreferredBackBufferHeight = 360;   // set this value to the desired height of your window
+            borderLeft = graphics.PreferredBackBufferWidth / 100 * 40;
+            borderRight = graphics.PreferredBackBufferWidth / 100 * 60;
+            graphics.ApplyChanges();
         }
-
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
-
             base.Initialize();
         }
+        #endregion
 
+        #region Game Structure
         protected override void LoadContent()
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             boxTexture = Content.Load<Texture2D>("dirt");
             playerTexture = Content.Load<Texture2D>("SpriteSheet");
-            
+            spriteSheet = Content.Load<Texture2D>("dirt");
+
             AnimationLoadContent();
-            // TODO: use this.Content to load your game content here
         }
         protected override void Update(GameTime gameTime)
         {
             // TODO: Add your update logic here
+            SetCollision();
             SetPlayerMovementBounds();
             PlayerInput();
+            CheckCollision();
             BasicMovement();
-            Collision();
+            AnimationUpdate(gameTime);
             base.Update(gameTime);
         }
-
-
-
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
-
+            
             spriteBatch.Begin();
-            
-            Rectangle player = new Rectangle(playerX, playerY, playerWidth, playerHeight);
-            spriteBatch.Draw(playerTexture, player, Color.AliceBlue);
-            
+            DrawPlayer();
             DrawWorld();
-            AnimationUpdate(gameTime);
             spriteBatch.End();
 
             base.Draw(gameTime);
         }
+        #endregion
 
+        #region Collision
         public void SetCollision()
         {
-            colBot = new Rectangle(playerX, playerY + playerHeight, playerWidth, playerSpeed); //Bottom Collision
+            colBottom = new Rectangle(playerX, playerY + playerHeight, playerWidth, playerSpeed); //Bottom Collision
             colTop = new Rectangle(playerX, playerY - playerSpeed, playerWidth, playerSpeed); //Top Collision
-            colLeftTop = new Rectangle(playerX - playerSpeed, playerY, playerSpeed, playerHeight); // Left Top Collision
-            colRightTop = new Rectangle(playerX + playerWidth, playerY, playerSpeed, playerHeight); // Left Top Collision
+            colLeft = new Rectangle(playerX - playerSpeed, playerY, playerSpeed, playerHeight); // Left Top Collision
+            colRight = new Rectangle(playerX + playerWidth, playerY, playerSpeed, playerHeight); // Left Top Collision
+            playerBotCenter = new Rectangle(playerX + playerWidth, playerY + playerHeight - 1, 1, 1); //Bottom Center Collision
         }
-        private void Collision()
+
+        private void CheckCollision()
         {
             SetCollision();
-
-            //Check if player intersects with any Blocks/Enemies/...
+            
             inAir = true;
             headroom = true;
             canMoveToTheLeft = true;
             canMoveToTheRight = true;
-            foreach (Rectangle b in liBlocks)
+
+            foreach (Slope s in liSlopes)
             {
-                if (colBot.Intersects(b))
+                if (playerBotCenter.Intersects(s.r))
                 {
                     inAir = false;
-                    playerY = b.Top - playerHeight;
+                    playerY = s.CalcPlayerBottomCenterY(new Point(playerBotCenter.Left, playerBotCenter.Top)) - playerHeight; 
                     gravity = 0;
                     SetCollision();
                 }
-                if (colTop.Intersects(b) && gravity < 0)
+            }
+
+            //Check all full Blocks
+            foreach (Block b in liBlocks)
+            {
+                if (colBottom.Intersects(b.r))
+                {
+                    inAir = false;
+                    playerY = b.r.Top - playerHeight;
+                    gravity = 0;
+                    SetCollision();
+                }
+                if (colTop.Intersects(b.r) && gravity < 0)
                 {
                     headroom = false;
                     gravity = 0;
-                    playerY = b.Bottom;
+                    playerY = b.r.Bottom;
                     SetCollision();
                 }
-                if (colLeftTop.Intersects(b))
+                if (colLeft.Intersects(b.r))
                 {
                     canMoveToTheLeft = false;
-                    playerX = b.Right;
+                    playerX = b.r.Right;
                     SetCollision();
                 }
-                if (colRightTop.Intersects(b))
+                if (colRight.Intersects(b.r))
                 {
                     canMoveToTheRight = false;
-                    playerX = b.Left - playerWidth;
+                    playerX = b.r.Left - playerWidth;
                     SetCollision();
                 }
             }
         }
+        #endregion
+
+        #region Player + World Creation
         private void PlayerInput()
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
@@ -215,28 +240,6 @@ namespace JungleAdventure
                 gravity = 0;
             }
         }
-
-        public void SetPlayerMovementBounds()
-        {
-            if (playerX + playerWidth > borderRight)
-            {
-                touchesBorderRight = true;
-            }
-            else
-            {
-                touchesBorderRight = false;
-            }
-
-            if (playerX < borderLeft)
-            {
-                touchesBorderLeft = true;
-            }
-            else
-            {
-                touchesBorderLeft = false;
-            }
-        }
-
         public void BasicMovement()
         {
             //basic left & right movement
@@ -287,21 +290,24 @@ namespace JungleAdventure
             //move player according to gravity's value
             playerY += gravity;
         }
-        public void DrawWorld()
+        public void SetPlayerMovementBounds()
         {
-            SetWorldOffset();
-            liBlocks.Clear();
-            for (int y = 0; y < world.GetLength(0); y++)
+            if (playerX + playerWidth > borderRight)
             {
-                for (int x = 0; x < world.GetLength(1); x++)
-                {
-                    if (world[y, x] == 1) // normal block
-                    {
-                        Rectangle block = new Rectangle(x * boxWidth + worldOffsetX, y * boxHeight, boxWidth, boxHeight);
-                        spriteBatch.Draw(boxTexture, block, Color.AliceBlue);
-                        liBlocks.Add(block);
-                    }
-                }
+                touchesBorderRight = true;
+            }
+            else
+            {
+                touchesBorderRight = false;
+            }
+
+            if (playerX < borderLeft)
+            {
+                touchesBorderLeft = true;
+            }
+            else
+            {
+                touchesBorderLeft = false;
             }
         }
         public void SetWorldOffset()
@@ -315,24 +321,64 @@ namespace JungleAdventure
                 worldOffsetX -= playerSpeed;
             }
         }
+        public void DrawWorld()
+        {
+            SetWorldOffset();
+            liBlocks.Clear();
+            liSlopes.Clear();
+            for (int y = 0; y < world.GetLength(0); y++)
+            {
+                for (int x = 0; x < world.GetLength(1); x++)
+                {
+                    if (world[y, x] == 1) // normal block
+                    {
+                        Block b = new Block(x * boxWidth + worldOffsetX, y * boxHeight, spriteSheet, dirtBlock);
+                        b.DrawBlock(spriteBatch);
+                        liBlocks.Add(b);
+                    }
+                    else if (world[y, x] == 2) // steep slope
+                    {
+                        Slope s = new Slope(x * boxWidth + worldOffsetX, y * boxHeight, 1f, 0, spriteSheet, dirtBlock);
+                        s.DrawBlock(spriteBatch);
+                        liSlopes.Add(s);
+                    }
+                    else if (world[y, x] == 3) // flat slope Bottom
+                    {
+                        Slope s = new Slope(x * boxWidth + worldOffsetX, y * boxHeight, 0.5f, 0, spriteSheet, dirtBlock);
+                        s.DrawBlock(spriteBatch);
+                        liSlopes.Add(s);
+                    }
+                    else if (world[y, x] == 4) // flat slope Top
+                    {
+                        Slope s = new Slope(x * boxWidth + worldOffsetX, y * boxHeight, 0.5f, boxHeight / 2, spriteSheet, dirtBlock);
+                        s.DrawBlock(spriteBatch);
+                        liSlopes.Add(s);
+                    }
+                }
+            }
+        }
+        public void DrawPlayer()
+        {
+            Rectangle player = new Rectangle(playerX, playerY, playerWidth, playerHeight);
+            spriteBatch.Draw(playerTexture, player, sourceRectangles[currentAnimationIndex], Color.White);
+        }
+        #endregion
 
-
+        #region Animation
         public void AnimationLoadContent()
         {
             // Set a default timer value.
             timer = 0;
             // Set an initial threshold of 250ms, you can change this to alter the speed of the animation (lower number = faster animation).
             threshold = 250;
-            // Three sourceRectangles contain the coordinates of Alex's three down-facing sprites on the charaset.
+            
             sourceRectangles = new Rectangle[3];
             sourceRectangles[0] = new Rectangle(0, 0, 550, 750);
             sourceRectangles[1] = new Rectangle(603, 0, 550, 750);
 
             // This tells the animation to start on the left-side sprite.
-            previousAnimationIndex = 2;
             currentAnimationIndex = 1;
         }
-
         public void AnimationUpdate(GameTime gameTime)
         {
             // Check if the timer has exceeded the threshold.
@@ -355,8 +401,7 @@ namespace JungleAdventure
             {
                 timer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
             }
-
-
         }
+        #endregion
     }
 }
