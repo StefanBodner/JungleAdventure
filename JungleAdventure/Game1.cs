@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace JungleAdventure
 {
@@ -24,6 +25,7 @@ namespace JungleAdventure
         private int boxHeight = 32;
 
         private Texture2D playerTexture;
+        private Rectangle player;
         private int playerSpeed = 3;
         private int playerHeight = 48;
         private int playerWidth = 32;
@@ -42,21 +44,27 @@ namespace JungleAdventure
         public bool up;
         public bool down;
 
+        // Collision Detectors
         static Rectangle colBottom;
         static Rectangle colTop;
         static Rectangle colLeft;
         static Rectangle colRight;
-        static Rectangle playerBotCenter;
+        static Rectangle colBottomCenter;
+        static Rectangle colBelowBottomCenter;
+        static Rectangle colRightTop;
+        static Rectangle colLeftTop;
 
+        // Result of Collision Detection
         static bool canMoveToTheLeft;
         static bool canMoveToTheRight;
 
+        // Set Bounds for "Camera" Movement
         static int borderRight;
         static int borderLeft;
         static bool touchesBorderRight;
         static bool touchesBorderLeft;
 
-
+        // Graphics/Animation Timer
         float timer; // A timer that stores milliseconds.
         int threshold; // An int that is the threshold for the timer.
         
@@ -78,14 +86,14 @@ namespace JungleAdventure
             { 1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0 },
             { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
             { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
-            { 1,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0 },
-            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
-            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0 },
-            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,3,4,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0 },
-            { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 },
-            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
-            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
-            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 },
+            { 1,5,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0 },
+            { 1,1,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,4,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
+            { 1,0,1,5,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,4,0,0,0,0,2,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0 },
+            { 1,0,0,1,5,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,4,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0 },
+            { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 },
+            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
+            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
+            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 },
             { 1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1 }};
 
         #endregion
@@ -123,7 +131,6 @@ namespace JungleAdventure
         }
         protected override void Update(GameTime gameTime)
         {
-            // TODO: Add your update logic here
             SetCollision();
             SetPlayerMovementBounds();
             PlayerInput();
@@ -150,9 +157,12 @@ namespace JungleAdventure
         {
             colBottom = new Rectangle(playerX, playerY + playerHeight, playerWidth, playerSpeed); //Bottom Collision
             colTop = new Rectangle(playerX, playerY - playerSpeed, playerWidth, playerSpeed); //Top Collision
-            colLeft = new Rectangle(playerX - playerSpeed, playerY, playerSpeed, playerHeight); // Left Top Collision
-            colRight = new Rectangle(playerX + playerWidth, playerY, playerSpeed, playerHeight); // Left Top Collision
-            playerBotCenter = new Rectangle(playerX + playerWidth / 2, playerY + playerHeight - 1, 1, 1); //Bottom Center Collision
+            colLeft = new Rectangle(playerX - playerSpeed, playerY, playerSpeed, playerHeight); // Left Collision
+            colLeftTop = new Rectangle(playerX - playerSpeed, playerY, playerSpeed, boxHeight / 2); // Left Bottom Collision
+            colRight = new Rectangle(playerX + playerWidth, playerY, playerSpeed, playerHeight); // Right Collision
+            colRightTop = new Rectangle(playerX + playerWidth, playerY, playerSpeed, boxHeight / 2); // Right Bottom Collision
+            colBottomCenter = new Rectangle(playerX + playerWidth / 2, playerY + playerHeight - 2, 1, 1); //Bottom Center Collision
+            colBelowBottomCenter = new Rectangle(playerX + playerWidth / 2, playerY + playerHeight + boxHeight / 2, 1, 1); //Bottom Center Collision
         }
 
         private void CheckCollision()
@@ -163,22 +173,35 @@ namespace JungleAdventure
             headroom = true;
             canMoveToTheLeft = true;
             canMoveToTheRight = true;
+            bool onSlope = false;
 
+            //Check Slopes
             foreach (Slope s in liSlopes)
             {
-                if (playerBotCenter.Intersects(s.r))
+                //Check if Player stands on Slope
+                if ((colBelowBottomCenter.Intersects(s.r) && gravity >= 0))
                 {
                     inAir = false;
-                    playerY = s.CalcPlayerBottomCenterY(new Point(playerBotCenter.Left, playerBotCenter.Top)) - playerHeight; 
+                    playerY = s.CalcPlayerBottomCenterY(new Point(colBelowBottomCenter.Left - worldOffsetX, colBelowBottomCenter.Top)) - playerHeight;
                     gravity = 0;
                     SetCollision();
+                    onSlope = true;
+                }
+                //Check if Player touches Slope
+                else if (colBottomCenter.Intersects(s.r) && gravity >= 0)
+                {
+                    inAir = false;
+                    playerY = s.CalcPlayerBottomCenterY(new Point(colBottomCenter.Left - worldOffsetX, colBottomCenter.Top)) - playerHeight;
+                    gravity = 0;
+                    SetCollision();
+                    onSlope = true;
                 }
             }
 
             //Check all full Blocks
             foreach (Block b in liBlocks)
             {
-                if (colBottom.Intersects(b.r))
+                if (colBottom.Intersects(b.r) && !onSlope)
                 {
                     inAir = false;
                     playerY = b.r.Top - playerHeight;
@@ -192,13 +215,13 @@ namespace JungleAdventure
                     playerY = b.r.Bottom;
                     SetCollision();
                 }
-                if (colLeft.Intersects(b.r))
+                if ((colLeft.Intersects(b.r) && !onSlope) || (colLeftTop.Intersects(b.r) && onSlope))
                 {
                     canMoveToTheLeft = false;
                     playerX = b.r.Right;
                     SetCollision();
                 }
-                if (colRight.Intersects(b.r))
+                if ((colRight.Intersects(b.r) && !onSlope) || (colRightTop.Intersects(b.r) && onSlope))
                 {
                     canMoveToTheRight = false;
                     playerX = b.r.Left - playerWidth;
@@ -338,7 +361,7 @@ namespace JungleAdventure
                         b.DrawBlock(spriteBatch);
                         liBlocks.Add(b);
                     }
-                    else if (world[y, x] == 2) // steep slope
+                    else if (world[y, x] == 2) // steep slope right
                     {
                         Slope s = new Slope(x * boxWidth + worldOffsetX, y * boxHeight, 1f, 0, slope, dirtBlock);
                         s.DrawBlock(spriteBatch);
@@ -356,14 +379,19 @@ namespace JungleAdventure
                         s.DrawBlock(spriteBatch);
                         liSlopes.Add(s);
                     }
+                    else if (world[y, x] == 5) // steep slope left
+                    {
+                        Slope s = new Slope(x * boxWidth + worldOffsetX, y * boxHeight, -1f, boxHeight, slope, dirtBlock);
+                        s.DrawBlockRotate(spriteBatch);
+                        liSlopes.Add(s);
+                    }
                 }
             }
         }
         public void DrawPlayer()
         {
-            Rectangle player = new Rectangle(playerX, playerY, playerWidth, playerHeight);
+            player = new Rectangle(playerX, playerY, playerWidth, playerHeight);
             spriteBatch.Draw(playerTexture, player, sourceRectangles[currentAnimationIndex], Color.White);
-            spriteBatch.Draw(boxTexture, playerBotCenter, Color.Red);
         }
         #endregion
 

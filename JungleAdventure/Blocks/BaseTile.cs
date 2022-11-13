@@ -36,5 +36,9 @@ namespace JungleAdventure.Blocks
         {
             spriteBatch.Draw(this.spriteSheet, r, this.textureCoordinates, Color.White);
         }
+        public void DrawBlockRotate(SpriteBatch spriteBatch)
+        {
+            spriteBatch.Draw(this.spriteSheet, r, this.textureCoordinates, Color.White, 0, new Vector2(0,0), SpriteEffects.FlipHorizontally, 0);
+        }
     }
 }
