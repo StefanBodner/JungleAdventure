@@ -16,6 +16,8 @@ namespace JungleAdventure
 
         static List<Block> liBlocks = new List<Block>();
         static List<Slope> liSlopes = new List<Slope>();
+        static List<Spike> liSpikes = new List<Spike>();
+        static List<Coin> liCoins = new List<Coin>();
 
         Texture2D spriteSheet;
 
@@ -42,7 +44,10 @@ namespace JungleAdventure
         public bool left;
         public bool right;
         public bool up;
-        public bool down;
+        public bool whip;
+
+        float whipTimer;
+        float whipThreshold = 250;
 
         // Collision Detectors
         static Rectangle colBottom;
@@ -88,8 +93,8 @@ namespace JungleAdventure
             { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
             { 1,5,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0 },
             { 1,1,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,4,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
-            { 1,0,1,5,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,4,0,0,0,0,2,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0 },
-            { 1,0,0,1,5,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,4,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0 },
+            { 1,0,1,5,0,0,2,1,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,4,0,0,0,0,2,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0 },
+            { 1,0,0,1,5,2,1,1,0,0,0,2,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,4,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0 },
             { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 },
             { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
             { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
@@ -136,6 +141,7 @@ namespace JungleAdventure
             PlayerInput();
             CheckCollision();
             BasicMovement();
+            
             AnimationUpdate(gameTime);
             base.Update(gameTime);
         }
@@ -146,6 +152,7 @@ namespace JungleAdventure
             spriteBatch.Begin();
             DrawPlayer();
             DrawWorld();
+            Whip(gameTime);
             spriteBatch.End();
 
             base.Draw(gameTime);
@@ -175,6 +182,17 @@ namespace JungleAdventure
             canMoveToTheRight = true;
             bool onSlope = false;
 
+            //Check Spikes
+            foreach (Spike s in liSpikes)
+            {
+                if (player.Intersects(s.r))
+                {
+                    //ToDo: die
+
+
+                }
+            }
+
             //Check Slopes
             foreach (Slope s in liSlopes)
             {
@@ -198,7 +216,7 @@ namespace JungleAdventure
                 }
             }
 
-            //Check all full Blocks
+            //Check Blocks
             foreach (Block b in liBlocks)
             {
                 if (colBottom.Intersects(b.r) && !onSlope)
@@ -248,19 +266,19 @@ namespace JungleAdventure
                 right = true;
             }
             else { right = false; }
-            if (Keyboard.GetState().IsKeyDown(Keys.W) || Keyboard.GetState().IsKeyDown(Keys.Up) || Keyboard.GetState().IsKeyDown(Keys.Space))
+            if (Keyboard.GetState().IsKeyDown(Keys.W) || Keyboard.GetState().IsKeyDown(Keys.Up))
             {
                 up = true;
             }
             else { up = false; }
-            if (Keyboard.GetState().IsKeyDown(Keys.S) || Keyboard.GetState().IsKeyDown(Keys.Down))
+            if (Keyboard.GetState().IsKeyDown(Keys.S) || Keyboard.GetState().IsKeyDown(Keys.Down) || Keyboard.GetState().IsKeyDown(Keys.Space) && !left && !right)
             {
-                down = true;
+                whip = true;
             }
-            else { down = false; }
+            else { whip = false; }
             if(Keyboard.GetState().IsKeyDown(Keys.R))
             {
-                playerX = 512;
+                playerX = 300;
                 playerY = 64;
                 gravity = 0;
             }
@@ -299,7 +317,7 @@ namespace JungleAdventure
             {
                 jumpTicks++;
             }
-            else if (gravity >= 0) //if player starts falling down again - reset jumpTick tracker
+            else if (gravity >= 0) //if player starts falling whip again - reset jumpTick tracker
             {
                 jumpTicks = 0;
             }
@@ -314,6 +332,24 @@ namespace JungleAdventure
 
             //move player according to gravity's value
             playerY += gravity;
+        }
+        public void Whip(GameTime gameTime)
+        {
+            if(whipTimer > whipThreshold)
+            {
+                Block b = new Block(playerX + playerWidth, playerY + playerHeight / 2, spriteSheet, dirtBlock);
+                b.DrawBlock(spriteBatch);
+            }
+
+            if (whip)
+            {
+                whipTimer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+            }
+            else
+            {
+                whipTimer = 0;
+                return;
+            }
         }
         public void SetPlayerMovementBounds()
         {
@@ -384,6 +420,18 @@ namespace JungleAdventure
                         Slope s = new Slope(x * boxWidth + worldOffsetX, y * boxHeight, -1f, boxHeight, slope, dirtBlock);
                         s.DrawBlockRotate(spriteBatch);
                         liSlopes.Add(s);
+                    }
+                    else if (world[y, x] == 6) // Spike
+                    {
+                        Spike s = new Spike(x* boxWidth + worldOffsetX, y* boxHeight, spriteSheet, dirtBlock);
+                        s.DrawBlock(spriteBatch);
+                        liSpikes.Add(s);
+                    }
+                    else if (world[y, x] == 7) // Coin
+                    {
+                        Coin c = new Coin(x * boxWidth + worldOffsetX, y * boxHeight, spriteSheet, dirtBlock);
+                        c.DrawBlock(spriteBatch);
+                        liCoins.Add(c);
                     }
                 }
             }

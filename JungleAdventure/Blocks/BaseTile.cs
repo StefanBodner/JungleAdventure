@@ -31,7 +31,6 @@ namespace JungleAdventure.Blocks
             this.spriteSheet = spriteSheet;
             this.textureCoordinates = textureCoordinates;
         }
-
         public void DrawBlock(SpriteBatch spriteBatch)
         {
             spriteBatch.Draw(this.spriteSheet, r, this.textureCoordinates, Color.White);

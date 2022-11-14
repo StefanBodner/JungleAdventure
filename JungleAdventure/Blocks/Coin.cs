@@ -3,9 +3,9 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace JungleAdventure.Blocks
 {
-    internal class Block : BaseTile
+    internal class Coin : BaseTile
     {
-        public Block(int x, int y, Texture2D spriteSheet, Rectangle textureCoordinates) : base(x, y, spriteSheet, textureCoordinates)
+        public Coin(int x, int y, Texture2D spriteSheet, Rectangle textureCoordinates) : base(x, y, spriteSheet, textureCoordinates)
         {
             this.textureCoordinates = textureCoordinates;
         }
