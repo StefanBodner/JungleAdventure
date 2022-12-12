@@ -68,7 +68,7 @@ namespace JungleAdventure
 
         // Graphics/Animation Timer
         float timer; // A timer that stores milliseconds.
-        int threshold; // An int that is the threshold for the timer.
+        int threshold; // An int that is the threshold for the timer.s
         
         Rectangle[] sourceRectangles;// A Rectangle array that stores sourceRectangles for animations.
         int previousAnimationIndex; // These bytes tell the spriteBatch.Draw() what sourceRectangle to display. 
