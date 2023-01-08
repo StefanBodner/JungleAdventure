@@ -14,19 +14,16 @@ namespace JungleAdventure
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
 
+        static List<Rectangle> liBlockID = new List<Rectangle>();
+
         static List<Block> liBlocks = new List<Block>();
         static List<Slope> liSlopes = new List<Slope>();
         static List<Spike> liSpikes = new List<Spike>();
         static List<Coin> liCoins = new List<Coin>();
 
         Texture2D spriteSheet;
+        BaseTile baseTile = new BaseTile() { };
 
-        private Texture2D slope;
-        private Texture2D boxTexture;
-        private int boxWidth = 32;
-        private int boxHeight = 32;
-
-        private Texture2D playerTexture;
         private Rectangle player;
         private int playerSpeed = 3;
         private int playerHeight = 48;
@@ -73,7 +70,7 @@ namespace JungleAdventure
 
         // Graphics/Animation Timer
         float timer; // A timer that stores milliseconds.
-        int threshold; // An int that is the threshold for the timer.
+        int threshold; // An int that is the threshold for the timer.s
         
         Rectangle[] sourceRectangles;// A Rectangle array that stores sourceRectangles for animations.
         //int previousAnimationIndex; // These bytes tell the spriteBatch.Draw() what sourceRectangle to display. 
@@ -92,7 +89,7 @@ namespace JungleAdventure
             { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0 },
             { 1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0 },
             { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
-            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
+            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
             { 1,5,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0 },
             { 1,1,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,4,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
             { 1,0,1,5,0,0,2,1,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,4,0,0,0,0,2,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0 },
@@ -119,20 +116,25 @@ namespace JungleAdventure
         }
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
             base.Initialize();
         }
-        #endregion
+        #endregion 
 
         #region Game Structure
         protected override void LoadContent()
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
+            spriteSheet = Content.Load<Texture2D>("SpriteSheet");
+            Rectangle r;
 
-            boxTexture = Content.Load<Texture2D>("dirt");
-            playerTexture = Content.Load<Texture2D>("SpriteSheet");
-            spriteSheet = Content.Load<Texture2D>("dirt");
-            slope = Content.Load<Texture2D>("Slope");
+            for (int y = 0; y <= 2; y++)
+            {
+                for (int x = 0; x <= 11; x++)
+                {
+                    r = new Rectangle(baseTile.tileWidth * x, baseTile.tileHeight * y, baseTile.tileWidth, baseTile.tileHeight);
+                    liBlockID.Add(r);
+                }
+            }
 
             AnimationLoadContent();
         }
@@ -165,13 +167,13 @@ namespace JungleAdventure
         public void SetCollision()
         {
             colBottom = new Rectangle(playerX, playerY + playerHeight, playerWidth, playerSpeed); //Bottom Collision
-            colTop = new Rectangle(playerX, playerY - playerSpeed, playerWidth, playerSpeed); //Top Collision
+            colTop = new Rectangle(playerX, playerY + gravity, playerWidth, playerSpeed); //Top Collision
             colLeft = new Rectangle(playerX - playerSpeed, playerY, playerSpeed, playerHeight); // Left Collision
-            colLeftTop = new Rectangle(playerX - playerSpeed, playerY, playerSpeed, boxHeight / 2); // Left Bottom Collision
+            colLeftTop = new Rectangle(playerX - playerSpeed, playerY, playerSpeed, baseTile.tileHeight / 2); // Left Bottom Collision
             colRight = new Rectangle(playerX + playerWidth, playerY, playerSpeed, playerHeight); // Right Collision
-            colRightTop = new Rectangle(playerX + playerWidth, playerY, playerSpeed, boxHeight / 2); // Right Bottom Collision
+            colRightTop = new Rectangle(playerX + playerWidth, playerY, playerSpeed, baseTile.tileHeight / 2); // Right Bottom Collision
             colBottomCenter = new Rectangle(playerX + playerWidth / 2, playerY + playerHeight - 2, 1, 1); //Bottom Center Collision
-            colBelowBottomCenter = new Rectangle(playerX + playerWidth / 2, playerY + playerHeight + boxHeight / 2, 1, 1); //Bottom Center Collision
+            colBelowBottomCenter = new Rectangle(playerX + playerWidth / 2, playerY + playerHeight + baseTile.tileHeight / 2, 1, 1); //Bottom Center Collision
         }
 
         private void CheckCollision()
@@ -190,8 +192,6 @@ namespace JungleAdventure
                 if (player.Intersects(s.r))
                 {
                     //ToDo: die
-
-
                 }
             }
 
@@ -199,7 +199,7 @@ namespace JungleAdventure
             foreach (Slope s in liSlopes)
             {
                 //Check if Player stands on Slope
-                if ((colBelowBottomCenter.Intersects(s.r) && gravity >= 0))
+                if (colBelowBottomCenter.Intersects(s.r) && gravity >= 0)
                 {
                     inAir = false;
                     playerY = s.CalcPlayerBottomCenterY(new Point(colBelowBottomCenter.Left - worldOffsetX, colBelowBottomCenter.Top)) - playerHeight;
@@ -395,43 +395,43 @@ namespace JungleAdventure
                 {
                     if (world[y, x] == 1) // normal block
                     {
-                        Block b = new Block(x * boxWidth + worldOffsetX, y * boxHeight, spriteSheet, dirtBlock);
+                        Block b = new Block(x * baseTile.tileWidth + worldOffsetX, y * baseTile.tileHeight, spriteSheet, liBlockID[0]);
                         b.DrawBlock(spriteBatch);
                         liBlocks.Add(b);
                     }
                     else if (world[y, x] == 2) // steep slope right
                     {
-                        Slope s = new Slope(x * boxWidth + worldOffsetX, y * boxHeight, 1f, 0, slope, dirtBlock);
+                        Slope s = new Slope(x * baseTile.tileWidth + worldOffsetX, y * baseTile.tileHeight, 1f, 0, spriteSheet, liBlockID[4]);
                         s.DrawBlock(spriteBatch);
                         liSlopes.Add(s);
                     }
                     else if (world[y, x] == 3) // flat slope Bottom
                     {
-                        Slope s = new Slope(x * boxWidth + worldOffsetX, y * boxHeight, 0.5f, 0, spriteSheet, dirtBlock);
+                        Slope s = new Slope(x * baseTile.tileWidth + worldOffsetX, y * baseTile.tileHeight, 0.5f, 0, spriteSheet, liBlockID[2]);
                         s.DrawBlock(spriteBatch);
                         liSlopes.Add(s);
                     }
                     else if (world[y, x] == 4) // flat slope Top
                     {
-                        Slope s = new Slope(x * boxWidth + worldOffsetX, y * boxHeight, 0.5f, boxHeight / 2, spriteSheet, dirtBlock);
+                        Slope s = new Slope(x * baseTile.tileWidth + worldOffsetX, y * baseTile.tileHeight, 0.5f, baseTile.tileHeight / 2, spriteSheet, liBlockID[3]);
                         s.DrawBlock(spriteBatch);
                         liSlopes.Add(s);
                     }
                     else if (world[y, x] == 5) // steep slope left
                     {
-                        Slope s = new Slope(x * boxWidth + worldOffsetX, y * boxHeight, -1f, boxHeight, slope, dirtBlock);
+                        Slope s = new Slope(x * baseTile.tileWidth + worldOffsetX, y * baseTile.tileHeight, -1f, baseTile.tileHeight, spriteSheet, liBlockID[4]);
                         s.DrawBlockRotate(spriteBatch);
                         liSlopes.Add(s);
                     }
                     else if (world[y, x] == 6) // Spike
                     {
-                        Spike s = new Spike(x* boxWidth + worldOffsetX, y* boxHeight, spriteSheet, dirtBlock);
+                        Spike s = new Spike(x* baseTile.tileWidth + worldOffsetX, y* baseTile.tileHeight, spriteSheet, liBlockID[5]);
                         s.DrawBlock(spriteBatch);
                         liSpikes.Add(s);
                     }
                     else if (world[y, x] == 7) // Coin
                     {
-                        Coin c = new Coin(x * boxWidth + worldOffsetX, y * boxHeight, spriteSheet, dirtBlock);
+                        Coin c = new Coin(x * baseTile.tileWidth + worldOffsetX, y * baseTile.tileHeight, spriteSheet, liBlockID[24]);
                         c.DrawBlock(spriteBatch);
                         liCoins.Add(c);
                     }
@@ -441,7 +441,7 @@ namespace JungleAdventure
         public void DrawPlayer()
         {
             player = new Rectangle(playerX, playerY, playerWidth, playerHeight);
-            spriteBatch.Draw(playerTexture, player, sourceRectangles[currentAnimationIndex], Color.White);
+            spriteBatch.Draw(spriteSheet, player, sourceRectangles[currentAnimationIndex], Color.White);
         }
         #endregion
 
@@ -454,8 +454,8 @@ namespace JungleAdventure
             threshold = 250;
             
             sourceRectangles = new Rectangle[3];
-            sourceRectangles[0] = new Rectangle(0, 0, 550, 750);
-            sourceRectangles[1] = new Rectangle(603, 0, 550, 750);
+            sourceRectangles[0] = new Rectangle(0, 96, 25, 34);
+            sourceRectangles[1] = new Rectangle(25, 96, 25, 34);
 
             // This tells the animation to start on the left-side sprite.
             currentAnimationIndex = 1;
