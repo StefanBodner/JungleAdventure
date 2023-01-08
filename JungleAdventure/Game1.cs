@@ -46,6 +46,8 @@ namespace JungleAdventure
         public bool up;
         public bool whip;
 
+        public string lastInput = "";
+
         float whipTimer;
         float whipThreshold = 250;
 
@@ -74,7 +76,7 @@ namespace JungleAdventure
         int threshold; // An int that is the threshold for the timer.
         
         Rectangle[] sourceRectangles;// A Rectangle array that stores sourceRectangles for animations.
-        int previousAnimationIndex; // These bytes tell the spriteBatch.Draw() what sourceRectangle to display. 
+        //int previousAnimationIndex; // These bytes tell the spriteBatch.Draw() what sourceRectangle to display. 
         int currentAnimationIndex;
 
         //Texture Coordinates SpriteSheet
