@@ -26,9 +26,9 @@ namespace JungleAdventure
 
         private Rectangle player;
         private int playerSpeed = 3;
-        private int playerHeight = 48;
+        private int playerHeight = 55;
         private int playerWidth = 32;
-        private int playerX = 512;
+        private int playerX = 490;
         private int playerY = 64;
         public int jumpTicks = 0;
         public int minJumpTicks = 5;
@@ -70,12 +70,14 @@ namespace JungleAdventure
 
         // Graphics/Animation Timer
         float timer; // A timer that stores milliseconds.
-        int threshold; // An int that is the threshold for the timer.s
-        
-        Rectangle[] sourceRectangles;// A Rectangle array that stores sourceRectangles for animations.
-        //int previousAnimationIndex; // These bytes tell the spriteBatch.Draw() what sourceRectangle to display. 
-        int currentAnimationIndex;
-
+        int threshold; // An int that is the threshold for the timer.
+        Rectangle[] sourcePlayer;// A Rectangle array that stores sourcePlayer for animations.
+        Rectangle[] sourceCoins;
+        int playerAnimationIndex;
+        int coinAnimationIndex;
+        bool lastInputRight = true; // false = lastInputLeft
+        SpriteEffects spriteEffects = SpriteEffects.None;
+		
         //Texture Coordinates SpriteSheet
         Rectangle dirtBlock = new Rectangle(0,0,32,32);
         #endregion 
@@ -86,14 +88,14 @@ namespace JungleAdventure
         static int[,] world = new int[,] {
             { 1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1 },
             { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 },
-            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0 },
+            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0 },
             { 1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0 },
+            { 1,0,0,0,0,0,7,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
             { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
-            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,0,0,0,6,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
-            { 1,5,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0 },
-            { 1,1,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,4,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
-            { 1,0,1,5,0,0,2,1,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,4,0,0,0,0,2,1,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0 },
-            { 1,0,0,1,5,2,1,1,0,0,0,2,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,4,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0 },
+            { 1,5,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,4,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0 },
+            { 1,1,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,4,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
+            { 1,0,1,5,0,0,2,1,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,4,1,1,1,1,1,1,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0 },
+            { 1,0,0,1,5,2,1,1,0,0,0,2,1,1,0,6,0,6,0,0,0,0,0,0,0,0,0,0,0,0,3,4,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0 },
             { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 },
             { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
             { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
@@ -261,11 +263,13 @@ namespace JungleAdventure
             if (Keyboard.GetState().IsKeyDown(Keys.A) || Keyboard.GetState().IsKeyDown(Keys.Left))
             {
                 left = true;
+                spriteEffects = SpriteEffects.FlipHorizontally;
             }
             else { left = false; }
             if (Keyboard.GetState().IsKeyDown(Keys.D) || Keyboard.GetState().IsKeyDown(Keys.Right))
             {
                 right = true;
+                spriteEffects = SpriteEffects.None;
             }
             else { right = false; }
             if (Keyboard.GetState().IsKeyDown(Keys.W) || Keyboard.GetState().IsKeyDown(Keys.Up))
@@ -395,7 +399,7 @@ namespace JungleAdventure
                 {
                     if (world[y, x] == 1) // normal block
                     {
-                        Block b = new Block(x * baseTile.tileWidth + worldOffsetX, y * baseTile.tileHeight, spriteSheet, liBlockID[0]);
+                        Block b = new Block(x * baseTile.tileWidth + worldOffsetX, y * baseTile.tileHeight, spriteSheet, liBlockID[1]);
                         b.DrawBlock(spriteBatch);
                         liBlocks.Add(b);
                     }
@@ -431,7 +435,7 @@ namespace JungleAdventure
                     }
                     else if (world[y, x] == 7) // Coin
                     {
-                        Coin c = new Coin(x * baseTile.tileWidth + worldOffsetX, y * baseTile.tileHeight, spriteSheet, liBlockID[24]);
+                        Coin c = new Coin(x * baseTile.tileWidth + worldOffsetX, y * baseTile.tileHeight, spriteSheet, sourceCoins[coinAnimationIndex]);
                         c.DrawBlock(spriteBatch);
                         liCoins.Add(c);
                     }
@@ -440,8 +444,10 @@ namespace JungleAdventure
         }
         public void DrawPlayer()
         {
+            
             player = new Rectangle(playerX, playerY, playerWidth, playerHeight);
-            spriteBatch.Draw(spriteSheet, player, sourceRectangles[currentAnimationIndex], Color.White);
+            spriteBatch.Draw(spriteSheet, player, sourcePlayer[playerAnimationIndex], Color.White, 0, new Vector2(0, 0), spriteEffects, 0);
+
         }
         #endregion
 
@@ -450,30 +456,68 @@ namespace JungleAdventure
         {
             // Set a default timer value.
             timer = 0;
-            // Set an initial threshold of 250ms, you can change this to alter the speed of the animation (lower number = faster animation).
-            threshold = 250;
-            
-            sourceRectangles = new Rectangle[3];
-            sourceRectangles[0] = new Rectangle(0, 96, 25, 34);
-            sourceRectangles[1] = new Rectangle(25, 96, 25, 34);
+            //speed of the animation (lower number = faster animation).
+            threshold = 100;
+
+            sourcePlayer = new Rectangle[7];
+            sourcePlayer[0] = new Rectangle(0, 105, 32, playerHeight);
+            sourcePlayer[1] = new Rectangle(32, 105, 32, playerHeight);
+            sourcePlayer[2] = new Rectangle(64, 105, 32, playerHeight);
+            sourcePlayer[3] = new Rectangle(96, 105, 32, playerHeight);
+            sourcePlayer[4] = new Rectangle(128, 105, 32, playerHeight);
+            sourcePlayer[5] = new Rectangle(160, 105, 32, playerHeight);
+            sourcePlayer[6] = new Rectangle(192, 105, 32, playerHeight);
+
+            sourceCoins = new Rectangle[6];
+            sourceCoins[0] = new Rectangle(0, 64, baseTile.tileWidth, baseTile.tileHeight);
+            sourceCoins[1] = new Rectangle(32, 64, baseTile.tileWidth, baseTile.tileHeight);
+            sourceCoins[2] = new Rectangle(64, 64, baseTile.tileWidth, baseTile.tileHeight);
+            sourceCoins[3] = new Rectangle(96, 64, baseTile.tileWidth, baseTile.tileHeight);
+            sourceCoins[4] = new Rectangle(128, 64, baseTile.tileWidth, baseTile.tileHeight);
+            sourceCoins[5] = new Rectangle(160, 64, baseTile.tileWidth, baseTile.tileHeight);
 
             // This tells the animation to start on the left-side sprite.
-            currentAnimationIndex = 1;
+            playerAnimationIndex = 1;
         }
         public void AnimationUpdate(GameTime gameTime)
-        {
+        { 
             // Check if the timer has exceeded the threshold.
-            if (timer > threshold)
+            if (timer > threshold) 
             {
-                // If Alex is in the middle sprite of the animation.
-                if (currentAnimationIndex == 1)
+                if(!right && !left)
                 {
-                    currentAnimationIndex = 0;
+                    if (lastInputRight)
+                    {
+                        playerAnimationIndex = 0;
+                    }
+                    else
+                    {
+                        playerAnimationIndex = 0; //aber Left
+                    }
                 }
-                else
+                if (right)
                 {
-                    currentAnimationIndex = 1;
+                    playerAnimationIndex++;
+                    if (playerAnimationIndex == sourcePlayer.Length)
+                    {
+                        playerAnimationIndex = 1;
+                    } 
                 }
+                if (left)
+                {
+                    playerAnimationIndex++;
+                    if (playerAnimationIndex == sourcePlayer.Length)
+                    {
+                        playerAnimationIndex = 1;
+                    }
+                }
+
+                coinAnimationIndex++;
+                if (coinAnimationIndex == 6)
+                {
+                    coinAnimationIndex = 0;
+                }
+
                 // Reset the timer.
                 timer = 0;
             }
@@ -485,4 +529,4 @@ namespace JungleAdventure
         }
         #endregion
     }
-}
+} 
