@@ -84,7 +84,7 @@ namespace JungleAdventure
         static int worldOffsetX;
 
         static int[,] world = new int[,] {
-            { 1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1 },
+            {  1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 ,0 ,0 , 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1 },
             { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 },
             { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,7,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0 },
             { 1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0 },
@@ -125,7 +125,8 @@ namespace JungleAdventure
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
             spriteSheet = Content.Load<Texture2D>("SpriteSheet");
-            Rectangle r;
+            Rectangle r = new Rectangle(baseTile.tileWidth, baseTile.tileHeight, baseTile.tileWidth, baseTile.tileHeight);
+            liBlockID.Add(r);
 
             for (int y = 0; y <= 2; y++)
             {
@@ -391,52 +392,101 @@ namespace JungleAdventure
             SetWorldOffset();
             liBlocks.Clear();
             liSlopes.Clear();
+
+            Block b;
+            Slope s;
+
             for (int y = 0; y < world.GetLength(0); y++)
             {
                 for (int x = 0; x < world.GetLength(1); x++)
                 {
-                    if (world[y, x] == 1) // normal block
+                    switch (world[y, x])
                     {
-                        Block b = new Block(x * baseTile.tileWidth + worldOffsetX, y * baseTile.tileHeight, spriteSheet, liBlockID[1]);
-                        b.DrawBlock(spriteBatch);
-                        liBlocks.Add(b);
+                        case 1: //dirt block
+                            b = new Block(x * baseTile.tileWidth + worldOffsetX, y * baseTile.tileHeight, spriteSheet, liBlockID[1]);
+                            b.DrawBlock(spriteBatch);
+                            liBlocks.Add(b);
+                            break;
+                        case 2: //grass block
+                            b = new Block(x * baseTile.tileWidth + worldOffsetX, y * baseTile.tileHeight, spriteSheet, liBlockID[2]);
+                            b.DrawBlock(spriteBatch);
+                            liBlocks.Add(b);
+                            break;
+                        case 3: //grass flat bottom slope | bottom right
+                            s = new Slope(x * baseTile.tileWidth + worldOffsetX, y * baseTile.tileHeight, 1f, 0, spriteSheet, liBlockID[3]);
+                            s.DrawBlock(spriteBatch);
+                            liSlopes.Add(s);
+                            break;
+                        case 4: //grass flat top slope | bottom right
+                            s = new Slope(x * baseTile.tileWidth + worldOffsetX, y * baseTile.tileHeight, 1f, 0, spriteSheet, liBlockID[4]);
+                            s.DrawBlock(spriteBatch);
+                            liSlopes.Add(s);
+                            break;
+                        case 5: //grass steep slope | bottom right
+                            s = new Slope(x * baseTile.tileWidth + worldOffsetX, y * baseTile.tileHeight, 0.5f, baseTile.tileHeight / 2, spriteSheet, liBlockID[3]);
+                            s.DrawBlock(spriteBatch);
+                            liSlopes.Add(s);
+                            break;
+                        case 6: //grass steep
+
+                            break;
+                        case 7:
+                            break;
+                        case 8:
+                            break;
+                        case 9:
+                            break;
+                        case 10:
+                            break;
+
                     }
-                    else if (world[y, x] == 2) // steep slope right
-                    {
-                        Slope s = new Slope(x * baseTile.tileWidth + worldOffsetX, y * baseTile.tileHeight, 1f, 0, spriteSheet, liBlockID[4]);
-                        s.DrawBlock(spriteBatch);
-                        liSlopes.Add(s);
-                    }
-                    else if (world[y, x] == 3) // flat slope Bottom
-                    {
-                        Slope s = new Slope(x * baseTile.tileWidth + worldOffsetX, y * baseTile.tileHeight, 0.5f, 0, spriteSheet, liBlockID[2]);
-                        s.DrawBlock(spriteBatch);
-                        liSlopes.Add(s);
-                    }
-                    else if (world[y, x] == 4) // flat slope Top
-                    {
-                        Slope s = new Slope(x * baseTile.tileWidth + worldOffsetX, y * baseTile.tileHeight, 0.5f, baseTile.tileHeight / 2, spriteSheet, liBlockID[3]);
-                        s.DrawBlock(spriteBatch);
-                        liSlopes.Add(s);
-                    }
-                    else if (world[y, x] == 5) // steep slope left
-                    {
-                        Slope s = new Slope(x * baseTile.tileWidth + worldOffsetX, y * baseTile.tileHeight, -1f, baseTile.tileHeight, spriteSheet, liBlockID[4]);
-                        s.DrawBlockRotate(spriteBatch);
-                        liSlopes.Add(s);
-                    }
-                    else if (world[y, x] == 6) // Spike
-                    {
-                        Spike s = new Spike(x* baseTile.tileWidth + worldOffsetX, y* baseTile.tileHeight, spriteSheet, liBlockID[5]);
-                        s.DrawBlock(spriteBatch);
-                        liSpikes.Add(s);
-                    }
-                    else if (world[y, x] == 7) // Coin
-                    {
-                        Coin c = new Coin(x * baseTile.tileWidth + worldOffsetX, y * baseTile.tileHeight, spriteSheet, sourceCoins[coinAnimationIndex]);
-                        c.DrawBlock(spriteBatch);
-                        liCoins.Add(c);
-                    }
+
+                    //if (world[y, x] == 1) // normal block
+                    //{
+                        
+                    //}
+                    //if (world[y, x] == 2) // normal block
+                    //{
+                    //    b = new Block(x * baseTile.tileWidth + worldOffsetX, y * baseTile.tileHeight, spriteSheet, liBlockID[2]);
+                    //    b.DrawBlock(spriteBatch);
+                    //    liBlocks.Add(b);
+                    //}
+                    //else if (world[y, x] == 3) // steep slope right
+                    //{
+                    //    Slope s = new Slope(x * baseTile.tileWidth + worldOffsetX, y * baseTile.tileHeight, 1f, 0, spriteSheet, liBlockID[4]);
+                    //    s.DrawBlock(spriteBatch);
+                    //    liSlopes.Add(s);
+                    //}
+                    //else if (world[y, x] == 4) // flat slope Bottom
+                    //{
+                    //    Slope s = new Slope(x * baseTile.tileWidth + worldOffsetX, y * baseTile.tileHeight, 0.5f, 0, spriteSheet, liBlockID[2]);
+                    //    s.DrawBlock(spriteBatch);
+                    //    liSlopes.Add(s);
+                    //}
+                    //else if (world[y, x] == 5) // flat slope Top
+                    //{
+                    //    Slope s = new Slope(x * baseTile.tileWidth + worldOffsetX, y * baseTile.tileHeight, 0.5f, baseTile.tileHeight / 2, spriteSheet, liBlockID[3]);
+                    //    s.DrawBlock(spriteBatch);
+                    //    liSlopes.Add(s);
+                    //}
+                    //else if (world[y, x] == 6) // steep slope left
+                    //{
+                    //    Slope s = new Slope(x * baseTile.tileWidth + worldOffsetX, y * baseTile.tileHeight, -1f, baseTile.tileHeight, spriteSheet, liBlockID[4]);
+                    //    s.DrawBlockRotate(spriteBatch);
+                    //    liSlopes.Add(s);
+                    //}
+                    //else if (world[y, x] == 7) // Spike
+                    //{
+                    //    Spike s = new Spike(x* baseTile.tileWidth + worldOffsetX, y* baseTile.tileHeight, spriteSheet, liBlockID[5]);
+                    //    s.DrawBlock(spriteBatch);
+                    //    liSpikes.Add(s);
+                    //}
+                    //else if (world[y, x] == 8) // Coin
+                    //{
+                    //    Coin c = new Coin(x * baseTile.tileWidth + worldOffsetX, y * baseTile.tileHeight, spriteSheet, sourceCoins[coinAnimationIndex]);
+                    //    c.DrawBlock(spriteBatch);
+                    //    liCoins.Add(c);
+                    //}
                 }
             }
         }
