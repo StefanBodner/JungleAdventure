@@ -1,4 +1,5 @@
 ﻿using JungleAdventure.Blocks;
+using JungleAdventure.Enemies;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -14,6 +15,7 @@ namespace JungleAdventure
         #region Variables
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
+        private SpriteFont font;
 
         static List<Rectangle> liBlockID = new List<Rectangle>();
 
@@ -21,6 +23,7 @@ namespace JungleAdventure
         static List<Slope> liSlopes = new List<Slope>();
         static List<Spike> liSpikes = new List<Spike>();
         static List<Coin> liCoins = new List<Coin>();
+        static List<Zombie> liZombie = new List<Zombie>();
         
         Texture2D spriteSheet;
         BaseTile baseTile = new BaseTile() { };
@@ -47,7 +50,7 @@ namespace JungleAdventure
         float whipTimer;
         float whipThreshold = 250;
 
-        int counter = 0;
+        int score = 0;
         int life = 3;
 
         // Collision Detectors
@@ -79,7 +82,6 @@ namespace JungleAdventure
         int coinAnimationIndex;
         bool lastInputRight = true; // false = lastInputLeft
         SpriteEffects spriteEffects = SpriteEffects.None;
-        SpriteFont font;
 
         //Texture Coordinates SpriteSheet
         Rectangle dirtBlock = new Rectangle(0,0,32,32);
@@ -93,12 +95,12 @@ namespace JungleAdventure
             { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1 },
             { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0 },
             { 0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0 },
-            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
-            { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
+            { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,9,9,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
+            { 0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
             { 1,8,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,3,4,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0 },
-            { 0,1,8,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,4,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
+            { 0,1,8,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,4,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
             { 1,0,1,8,0,0,2,1,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,4,1,1,1,1,1,1,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0 },
-            { 0,0,0,1,8,2,1,1,0,0,0,2,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,4,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0 },
+            { 0,0,0,1,8,2,1,1,0,0,0,2,1,1,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,3,4,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0 },
             { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 },
             { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
             { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
@@ -121,7 +123,6 @@ namespace JungleAdventure
         }
         protected override void Initialize()
         {
-            this.Components.Add(new MyControls(this));
             base.Initialize();
         }
         #endregion 
@@ -133,6 +134,7 @@ namespace JungleAdventure
             spriteSheet = Content.Load<Texture2D>("SpriteSheet");
             Rectangle r = new Rectangle(baseTile.tileWidth, baseTile.tileHeight, baseTile.tileWidth, baseTile.tileHeight);
             liBlockID.Add(r);
+            font = Content.Load<SpriteFont>("defaultFont");
 
             for (int y = 0; y <= 2; y++)
             {
@@ -143,16 +145,46 @@ namespace JungleAdventure
                 }
             }
 
+            //Load all Animations
             AnimationLoadContent();
+
+            //Load All Zombies in List
+            for (int y = 0; y < world.GetLength(0); y++)
+            {
+                for (int x = 0; x < world.GetLength(1); x++)
+                {
+                    switch (world[y, x])
+                    {
+                        case 10:
+                            liZombie.Add(new Zombie(x * baseTile.tileWidth - worldOffsetX, y * baseTile.tileHeight, spriteSheet, sourceCoins[coinAnimationIndex]));
+                            break;
+                    }
+                }
+            }
         }
+
+        private void SetEnemyMovement()
+        {
+            foreach (Zombie z in liZombie)
+            {
+                foreach (Block b in liBlocks)
+                {
+                    z.r.Offset(z.ZombieMovementSpeed(b.r, worldOffsetX), 0);
+                }
+            }
+        }
+
         protected override void Update(GameTime gameTime)
         {
             SetCollision();
             SetPlayerMovementBounds();
             PlayerInput();
-            CheckCollision();
+            CheckCollisionPlayer();
+            CheckCollisionEnemy();
             BasicMovement();
-            
+
+            SetEnemyMovement();
+
             AnimationUpdate(gameTime);
             base.Update(gameTime);
         }
@@ -161,13 +193,25 @@ namespace JungleAdventure
             GraphicsDevice.Clear(Color.CornflowerBlue);
             
             spriteBatch.Begin();
+            
             DrawPlayer();
             DrawWorld();
+            DrawEnemies();
+
+            DrawScoreAndLifes();
             Whip(gameTime);
 
             spriteBatch.End();
 
             base.Draw(gameTime);
+        }
+
+        private void DrawEnemies()
+        {
+            foreach (Zombie z in liZombie)
+            {
+                z.DrawZombie(spriteBatch);
+            }
         }
         #endregion
 
@@ -183,7 +227,7 @@ namespace JungleAdventure
             colBottomCenter = new Rectangle(playerX + playerWidth / 2, playerY + playerHeight - 2, 1, 1); //Bottom Center Collision
             colBelowBottomCenter = new Rectangle(playerX + playerWidth / 2, playerY + playerHeight + baseTile.tileHeight / 2, 1, 1); //Bottom Center Collision
         }
-        private void CheckCollision()
+        private void CheckCollisionPlayer()
         {
             SetCollision();
             
@@ -198,7 +242,7 @@ namespace JungleAdventure
             {
                 if (player.Intersects(s.r))
                 {
-                    //ToDo: die
+                    RemoveLife();
                 }
             }
 
@@ -261,11 +305,11 @@ namespace JungleAdventure
             {
                 if (player.Intersects(c.r))
                 {
-                    counter++;
-                    if(counter == 100)
+                    score++;
+                    if(score == 10)
                     {
                         life++;
-                        counter = 0;
+                        score = 0;
                     }
 
                     int coinBlockY = Convert.ToInt32(Math.Floor(((float)c.tileX - (float)worldOffsetX) / (float)baseTile.tileWidth));
@@ -273,6 +317,25 @@ namespace JungleAdventure
 
                     world[coinBlockX, coinBlockY] = 0;
                 }
+            }
+        }
+        private void CheckCollisionEnemy()
+        {
+            foreach(Zombie z in liZombie)
+            {
+                foreach(Block b in liBlocks)
+                {
+                    int i = z.ZombieMovementSpeed(b.r, worldOffsetX);
+                    
+                }
+            }
+        }
+        private void RemoveLife()
+        {
+            life--;
+            if(life == 0)
+            {
+                //TODO: DeathScreen
             }
         }
         #endregion
@@ -419,8 +482,6 @@ namespace JungleAdventure
         }
         public void DrawWorld()
         {
-            private 
-            
             SetWorldOffset();
             liBlocks.Clear();
             liSlopes.Clear();
@@ -477,7 +538,7 @@ namespace JungleAdventure
                             liSlopes.Add(s);
                             break;
                         case 9:
-                            c = new Coin(x * baseTile.tileWidth + worldOffsetX, y * baseTile.tileHeight, spriteSheet, liBlockID[28]);
+                            c = new Coin(x * baseTile.tileWidth + worldOffsetX, y * baseTile.tileHeight, spriteSheet, sourceCoins[coinAnimationIndex]);
                             c.DrawBlock(spriteBatch);
                             liCoins.Add(c);
                             break;
@@ -491,12 +552,17 @@ namespace JungleAdventure
         }
         public void DrawPlayer()
         {
-            
             player = new Rectangle(playerX, playerY, playerWidth, playerHeight);
             spriteBatch.Draw(spriteSheet, player, sourcePlayer[playerAnimationIndex], Color.White, 0, new Vector2(0, 0), spriteEffects, 0);
+        }
+
+        #endregion
+
+        public void DrawScoreAndLifes()
+        {
+            spriteBatch.DrawString(font, "Score: " + score, new Vector2(100, 100), Color.Black);
 
         }
-        #endregion
 
         #region Animation
         public void AnimationLoadContent()
