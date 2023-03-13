@@ -1,5 +1,7 @@
-﻿using Microsoft.Xna.Framework;
+﻿using JungleAdventure.Blocks;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.Collections.Generic;
 
 namespace JungleAdventure.Enemies
 {
@@ -27,19 +29,6 @@ namespace JungleAdventure.Enemies
 
             this.spriteSheet = spriteSheet;
             this.textureCoordinates = textureCoordinates;
-        }
-
-        public int ZombieMovementSpeed(Rectangle block, int worldOffsetX)
-        {
-            //Check if Zombie touches Ground
-            Rectangle groundCheck = new Rectangle(zombieX + zombieWidth / 2 - worldOffsetX, zombieY + zombieHeight, 3, 10);
-
-            if (r.Intersects(block) || !groundCheck.Intersects(block))
-            {
-                zombieSpeed = -zombieSpeed;
-            }
-
-            return zombieSpeed;
         }
 
         public void DrawZombie(SpriteBatch spriteBatch)
