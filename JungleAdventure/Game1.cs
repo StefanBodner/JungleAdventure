@@ -97,11 +97,11 @@ namespace JungleAdventure
             { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0 },
             { 0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0 },
             { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,9,9,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
-            { 0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
+            { 0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
             { 1,8,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,3,4,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0 },
             { 0,1,8,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,4,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
             { 1,0,1,8,0,0,2,1,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,4,1,1,1,1,1,1,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0 },
-            { 0,0,0,1,8,2,1,1,0,0,0,2,1,1,0,0,0,0,0,0,10,1,0,0,0,0,0,0,0,0,3,4,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0 },
+            { 0,0,0,1,8,2,1,1,0,0,0,2,1,1,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,0,3,4,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0 },
             { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 },
             { 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
             { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
@@ -182,9 +182,12 @@ namespace JungleAdventure
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
             spriteBatch.Begin();
+
+            //Draw Background
+            spriteBatch.Draw(background, new Rectangle(worldOffsetX / 3 - background.Width, 0, background.Width, background.Height), new Rectangle(0, 0, background.Width, background.Height), Color.White, 0, new Vector2(0, 0), SpriteEffects.FlipHorizontally, 0);
             spriteBatch.Draw(background, new Rectangle(worldOffsetX / 3, 0, background.Width, background.Height), Color.White);
             spriteBatch.Draw(background, new Rectangle(worldOffsetX / 3 + background.Width, 0, background.Width, background.Height), new Rectangle(0, 0, background.Width, background.Height),Color.White, 0, new Vector2(0, 0), SpriteEffects.FlipHorizontally, 0);
-            //hallo stefan lg stabi
+            spriteBatch.Draw(background, new Rectangle(worldOffsetX / 3 + background.Width * 2, 0, background.Width, background.Height), Color.White);
 
             DrawPlayer();
             DrawWorld();
@@ -197,12 +200,11 @@ namespace JungleAdventure
 
             base.Draw(gameTime);
         }
-
         private void DrawEnemies()
         {
             foreach (Zombie z in liZombie)
             {
-                z.DrawZombie(spriteBatch);
+                z.DrawZombie(spriteBatch, worldOffsetX);
             }
         }
         #endregion
@@ -316,9 +318,9 @@ namespace JungleAdventure
             foreach (Zombie z in liZombie)
             {
                 //Create Ground Check for Zombies
-                Rectangle groundCheck = new Rectangle(z.zombieX + z.zombieWidth / 2 - worldOffsetX, z.zombieY + z.zombieHeight, 1, 10);
+                Rectangle groundCheck = new Rectangle(z.r.X + z.zombieWidth / 2, z.r.Y + z.zombieHeight, 1, 16);
 
-                bool inAir = false;
+                bool inAir = true;
                 bool touchesWall = false;
 
                 foreach (Block b in liBlocks)
@@ -326,7 +328,7 @@ namespace JungleAdventure
                     //Check if Zombie touches Ground
                     if (groundCheck.Intersects(b.r))
                     {
-                        inAir = true;
+                        inAir = false;
                     }
                     if (z.r.Intersects(b.r))
                     {
@@ -340,10 +342,8 @@ namespace JungleAdventure
                     z.zombieSpeed = -z.zombieSpeed;
                 }
 
-                //Move Zombie 
-                z.zombieX = z.zombieX - worldOffsetX;
-                z.r.X += z.zombieSpeed;
-
+                //Move Zombie
+                z.awayFromBaseXCoordinate += z.zombieSpeed;
             }
         }
         private void RemoveLife()
@@ -577,7 +577,7 @@ namespace JungleAdventure
         public void DrawScoreAndLifes()
         {
             spriteBatch.DrawString(font, "Score: " + score, new Vector2(50, 100), Color.Black);
-            spriteBatch.DrawString(font, "Speed: " + liZombie[0].zombieSpeed, new Vector2(50, 75), Color.Black);
+            spriteBatch.DrawString(font, "Lifes: " + life, new Vector2(50, 75), Color.Black);
             spriteBatch.DrawString(font, "Offset: " + worldOffsetX, new Vector2(50, 50), Color.Black);
         }
 
