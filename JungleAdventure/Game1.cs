@@ -28,6 +28,7 @@ namespace JungleAdventure
         Texture2D spriteSheet;
         Texture2D background;
         BaseTile baseTile = new BaseTile() { };
+        Zombie baseZombie = new Zombie() { };
 
         private Rectangle player;
         private int playerSpeed = 3;
@@ -39,6 +40,10 @@ namespace JungleAdventure
         public int minJumpTicks = 5;
         public int force = -17;
         public int gravity = 0;
+
+        bool isInvincible = false;
+        float damageTimer = 0;
+        float damageThreshold = 1200;
         
         public bool inAir = true;
         public bool headroom = true;
@@ -46,10 +51,10 @@ namespace JungleAdventure
         public bool left;
         public bool right;
         public bool up;
-        public bool whip;
+        public bool shoot;
 
-        float whipTimer;
-        float whipThreshold = 250;
+        float shootTimer;
+        float shootThreshold = 250;
 
         int score = 0;
         int life = 3;
@@ -79,7 +84,9 @@ namespace JungleAdventure
         int threshold; // An int that is the threshold for the timer.
         Rectangle[] sourcePlayer;// A Rectangle array that stores sourcePlayer for animations.
         Rectangle[] sourceCoins;
+        Rectangle[] sourceZombie;
         int playerAnimationIndex;
+        int zombieAnimationIndex;
         int coinAnimationIndex;
         bool lastInputRight = true; // false = lastInputLeft
         SpriteEffects spriteEffects = SpriteEffects.None;
@@ -99,7 +106,7 @@ namespace JungleAdventure
             { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,9,9,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
             { 0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
             { 1,8,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,3,4,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0 },
-            { 0,1,8,0,0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,4,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
+            { 0,1,8,0,0,0,0,11,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,4,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
             { 1,0,1,8,0,0,2,1,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,4,1,1,1,1,1,1,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0 },
             { 0,0,0,1,8,2,1,1,0,0,0,2,1,1,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,0,3,4,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0 },
             { 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0,0,0,0,0,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 },
@@ -158,7 +165,7 @@ namespace JungleAdventure
                     switch (world[y, x])
                     {
                         case 10:
-                            liZombie.Add(new Zombie(x * baseTile.tileWidth, y * baseTile.tileHeight, spriteSheet, sourceCoins[4]));
+                            liZombie.Add(new Zombie(x * baseTile.tileWidth, y * baseTile.tileHeight - 10, spriteSheet, sourceZombie[zombieAnimationIndex]));
                             break;
                     }
                 }
@@ -171,7 +178,7 @@ namespace JungleAdventure
             SetCollision();
             SetPlayerMovementBounds();
             PlayerInput();
-            CheckCollisionPlayer();
+            CheckCollisionPlayer(gameTime);
             CheckCollisionEnemy();
             BasicMovement();
 
@@ -204,6 +211,7 @@ namespace JungleAdventure
         {
             foreach (Zombie z in liZombie)
             {
+                z.textureCoordinates = sourceZombie[zombieAnimationIndex];
                 z.DrawZombie(spriteBatch, worldOffsetX);
             }
         }
@@ -221,7 +229,7 @@ namespace JungleAdventure
             colBottomCenter = new Rectangle(playerX + playerWidth / 2, playerY + playerHeight - 2, 1, 1); //Bottom Center Collision
             colBelowBottomCenter = new Rectangle(playerX + playerWidth / 2, playerY + playerHeight + baseTile.tileHeight / 2, 1, 1); //Bottom Center Collision
         }
-        private void CheckCollisionPlayer()
+        private void CheckCollisionPlayer(GameTime gameTime)
         {
             SetCollision();
             
@@ -312,6 +320,33 @@ namespace JungleAdventure
                     world[coinBlockX, coinBlockY] = 0;
                 }
             }
+
+            //Check Zombie
+            foreach (Zombie z in liZombie)
+            {
+                if (player.Intersects(z.r))
+                {
+                    RemoveLife();
+                }
+            }
+            
+            if (isInvincible)
+            {
+                if (damageTimer < damageThreshold)
+                {
+                    damageTimer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+                }
+                else
+                {
+                    isInvincible = false;
+                    damageTimer = 0;
+                }
+            }
+
+            if(playerY > 16 * 32)
+            {
+                RemoveLife();
+            }
         }
         private void CheckCollisionEnemy()
         {
@@ -348,12 +383,13 @@ namespace JungleAdventure
         }
         private void RemoveLife()
         {
-            life--;
-            if(life == 0)
+            if (!isInvincible)
             {
-                //TODO: DeathScreen
+                life--;
+                isInvincible = true;
             }
         }
+
         #endregion
 
         #region Player + World Creation
@@ -382,9 +418,9 @@ namespace JungleAdventure
             else { up = false; }
             if (Keyboard.GetState().IsKeyDown(Keys.S) || Keyboard.GetState().IsKeyDown(Keys.Down) || Keyboard.GetState().IsKeyDown(Keys.Space) && !left && !right)
             {
-                whip = true;
+                shoot = true;
             }
-            else { whip = false; }
+            else { shoot = false; }
             if(Keyboard.GetState().IsKeyDown(Keys.R))
             {
                 playerX = 300;
@@ -449,19 +485,19 @@ namespace JungleAdventure
         }
         public void Whip(GameTime gameTime)
         {
-            if(whipTimer > whipThreshold)
+            if(shootTimer > shootThreshold)
             {
                 Block b = new Block(playerX + playerWidth, playerY + playerHeight / 2, spriteSheet, dirtBlock);
                 b.DrawBlock(spriteBatch);
             }
 
-            if (whip)
+            if (shoot)
             {
-                whipTimer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+                shootTimer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
             }
             else
             {
-                whipTimer = 0;
+                shootTimer = 0;
                 return;
             }
         }
@@ -502,10 +538,12 @@ namespace JungleAdventure
             liBlocks.Clear();
             liSlopes.Clear();
             liCoins.Clear();
+            liSpikes.Clear();
 
             Block b;
             Slope s;
             Coin c;
+            Spike spike;
 
             for (int y = 0; y < world.GetLength(0); y++)
             {
@@ -553,13 +591,18 @@ namespace JungleAdventure
                             s.DrawBlockRotate(spriteBatch);
                             liSlopes.Add(s);
                             break;
-                        case 9:
+                        case 9: //Coin
                             c = new Coin(x * baseTile.tileWidth + worldOffsetX, y * baseTile.tileHeight, spriteSheet, sourceCoins[coinAnimationIndex]);
                             c.DrawBlock(spriteBatch);
                             liCoins.Add(c);
                             break;
                         case 10:
-                            
+                            //Already handled somewhere else
+                            break;
+                        case 11:
+                            spike = new Spike(x * baseTile.tileWidth + worldOffsetX, y * baseTile.tileHeight, spriteSheet, liBlockID[6]);
+                            spike.DrawBlock(spriteBatch);
+                            liSpikes.Add(spike);
                             break;
 
                     }
@@ -576,9 +619,10 @@ namespace JungleAdventure
 
         public void DrawScoreAndLifes()
         {
-            spriteBatch.DrawString(font, "Score: " + score, new Vector2(50, 100), Color.Black);
-            spriteBatch.DrawString(font, "Lifes: " + life, new Vector2(50, 75), Color.Black);
-            spriteBatch.DrawString(font, "Offset: " + worldOffsetX, new Vector2(50, 50), Color.Black);
+            spriteBatch.Draw(this.spriteSheet, new Rectangle(0,0,4*32,3*32), new Rectangle(8*32, 6*32, 4*32, 3*32), Color.White);
+
+            spriteBatch.DrawString(font, "Lifes: " + life, new Vector2(30, 20), Color.Black);
+            spriteBatch.DrawString(font, "Score: " + score, new Vector2(30, 45), Color.Black);
         }
 
         #region Animation
@@ -606,6 +650,12 @@ namespace JungleAdventure
             sourceCoins[4] = new Rectangle(128, 64, baseTile.tileWidth, baseTile.tileHeight);
             sourceCoins[5] = new Rectangle(160, 64, baseTile.tileWidth, baseTile.tileHeight);
 
+            sourceZombie = new Rectangle[4];
+            sourceZombie[0] = new Rectangle(0, 224 + 22, baseZombie.zombieWidth, baseZombie.zombieHeight);
+            sourceZombie[1] = new Rectangle(32, 224 + 22, baseZombie.zombieWidth, baseZombie.zombieHeight);
+            sourceZombie[2] = new Rectangle(64, 224 + 22, baseZombie.zombieWidth, baseZombie.zombieHeight);
+            sourceZombie[3] = new Rectangle(96, 224 + 22, baseZombie.zombieWidth, baseZombie.zombieHeight);
+
             // This tells the animation to start on the left-side sprite.
             playerAnimationIndex = 1;
         }
@@ -614,6 +664,7 @@ namespace JungleAdventure
             // Check if the timer has exceeded the threshold.
             if (timer > threshold) 
             {
+                //Player Animation
                 if(!right && !left)
                 {
                     if (lastInputRight)
@@ -634,10 +685,18 @@ namespace JungleAdventure
                     } 
                 }
 
+                //Coins Animation
                 coinAnimationIndex++;
                 if (coinAnimationIndex == 6)
                 {
                     coinAnimationIndex = 0;
+                }
+
+                //Zombie Animation
+                zombieAnimationIndex++;
+                if(zombieAnimationIndex == 3)
+                {
+                    zombieAnimationIndex = 0;
                 }
 
                 // Reset the timer.

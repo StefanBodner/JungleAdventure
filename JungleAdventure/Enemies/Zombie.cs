@@ -13,7 +13,7 @@ namespace JungleAdventure.Enemies
 
         
         public int zombieWidth = 32;
-        public int zombieHeight = 32;
+        public int zombieHeight = 42;
         public int zombieSpeed = 2;
         
         public Texture2D spriteSheet;
@@ -34,7 +34,18 @@ namespace JungleAdventure.Enemies
         public void DrawZombie(SpriteBatch spriteBatch, int worldOffsetX)
         {
             r = new Rectangle(zBaseX + awayFromBaseXCoordinate + worldOffsetX, zBaseY, zombieWidth, zombieHeight);
-            spriteBatch.Draw(this.spriteSheet, r, this.textureCoordinates, Color.White);
+
+            if(zombieSpeed < 0)
+            {
+                //Draw Zombie mirrored
+                spriteBatch.Draw(this.spriteSheet, r, this.textureCoordinates, Color.White, 0, new Vector2(0, 0), SpriteEffects.FlipHorizontally, 0);
+            }
+            else
+            {
+                spriteBatch.Draw(this.spriteSheet, r, this.textureCoordinates, Color.White);
+            }
+
+            
         }
     }
 }
