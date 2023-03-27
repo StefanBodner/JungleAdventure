@@ -334,6 +334,7 @@ namespace JungleAdventure
             {
                 if (damageTimer < damageThreshold)
                 {
+                    //Animatie Damage
                     damageTimer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
                 }
                 else
