@@ -1,5 +1,6 @@
 ﻿using JungleAdventure.Blocks;
 using JungleAdventure.Enemies;
+using JungleAdventure.Player;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -24,11 +25,13 @@ namespace JungleAdventure
         static List<Spike> liSpikes = new List<Spike>();
         static List<Coin> liCoins = new List<Coin>();
         static List<Zombie> liZombie = new List<Zombie>();
+        static List<Bullet> liBullets = new List<Bullet>();
         
         Texture2D spriteSheet;
         Texture2D background;
         BaseTile baseTile = new BaseTile() { };
         Zombie baseZombie = new Zombie() { };
+        Bullet bullet = new Bullet() { };
 
         private Rectangle player;
         private int playerSpeed = 3;
@@ -43,7 +46,8 @@ namespace JungleAdventure
 
         bool isInvincible = false;
         float damageTimer = 0;
-        float damageThreshold = 1200;
+        float damageThreshold = 1500;
+        int damageAnimationInvisFrame;
         
         public bool inAir = true;
         public bool headroom = true;
@@ -53,8 +57,11 @@ namespace JungleAdventure
         public bool up;
         public bool shoot;
 
+        int shootingAnimationIndex;
         float shootTimer;
-        float shootThreshold = 250;
+        float shootThreshold = 500;
+        int bulletAmount = 6;
+        bool readyToFire = true;
 
         int score = 0;
         int life = 3;
@@ -82,7 +89,8 @@ namespace JungleAdventure
         // Graphics/Animation Timer
         float timer; // A timer that stores milliseconds.
         int threshold; // An int that is the threshold for the timer.
-        Rectangle[] sourcePlayer;// A Rectangle array that stores sourcePlayer for animations.
+        Rectangle[] sourcePlayer;
+        Rectangle[] shootingPlayer;
         Rectangle[] sourceCoins;
         Rectangle[] sourceZombie;
         int playerAnimationIndex;
@@ -90,9 +98,6 @@ namespace JungleAdventure
         int coinAnimationIndex;
         bool lastInputRight = true; // false = lastInputLeft
         SpriteEffects spriteEffects = SpriteEffects.None;
-
-        //Texture Coordinates SpriteSheet
-        Rectangle dirtBlock = new Rectangle(0,0,32,32);
         #endregion 
 
         #region Worlds
@@ -104,7 +109,7 @@ namespace JungleAdventure
             { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0 },
             { 0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0 },
             { 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,9,9,9,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
-            { 0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
+            { 0,0,0,0,9,0,0,0,0,0,0,0,0,0,0,0,1,10,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
             { 1,8,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,9,0,0,0,0,0,0,3,4,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0 },
             { 0,1,8,0,0,0,0,11,9,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,4,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 },
             { 1,0,1,8,0,0,2,1,0,0,0,0,2,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,3,4,1,1,1,1,1,1,1,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0 },
@@ -180,6 +185,7 @@ namespace JungleAdventure
             PlayerInput();
             CheckCollisionPlayer(gameTime);
             CheckCollisionEnemy();
+            CheckCollisionBullet();
             BasicMovement();
 
             AnimationUpdate(gameTime);
@@ -197,22 +203,39 @@ namespace JungleAdventure
             spriteBatch.Draw(background, new Rectangle(worldOffsetX / 3 + background.Width * 2, 0, background.Width, background.Height), Color.White);
 
             DrawPlayer();
+            DrawBullets();
             DrawWorld();
             DrawEnemies();
 
             DrawScoreAndLifes();
-            Whip(gameTime);
+            Shoot(gameTime);
 
             spriteBatch.End();
 
             base.Draw(gameTime);
         }
+        
         private void DrawEnemies()
         {
             foreach (Zombie z in liZombie)
             {
                 z.textureCoordinates = sourceZombie[zombieAnimationIndex];
                 z.DrawZombie(spriteBatch, worldOffsetX);
+            }
+        }
+        private void DrawBullets()
+        {
+            foreach(Bullet b in liBullets)
+            {
+                b.DrawBullet(spriteBatch, worldOffsetX);         
+            }
+
+            for (int i = liBullets.Count - 1; i >= 0; i--)
+            {
+                if(liBullets[i].x < 0 - worldOffsetX || liBullets[i].x > 1000 - worldOffsetX)
+                {
+                    liBullets.RemoveAt(i);
+                }
             }
         }
         #endregion
@@ -382,6 +405,38 @@ namespace JungleAdventure
                 z.awayFromBaseXCoordinate += z.zombieSpeed;
             }
         }
+        private void CheckCollisionBullet()
+        {
+            if(liBullets.Count <= 0)
+            {
+                return;
+            }
+
+            foreach(Bullet b in liBullets)
+            {
+                //Check Zombie Collision
+                foreach(Zombie z in liZombie)
+                {
+                    if (b.r.Intersects(z.r))
+                    {
+                        liBullets.Remove(b);
+                        liZombie.Remove(z);
+                        score += 2; //Get Scorepoints for killing Zombie
+                        return;
+                    }
+                }
+
+                //Check Block Collision
+                foreach(Block bl in liBlocks)
+                {
+                    if (b.r.Intersects(bl.r))
+                    {
+                        liBullets.Remove(b);
+                        return;
+                    }
+                }
+            }
+        }
         private void RemoveLife()
         {
             if (!isInvincible)
@@ -390,7 +445,6 @@ namespace JungleAdventure
                 isInvincible = true;
             }
         }
-
         #endregion
 
         #region Player + World Creation
@@ -403,12 +457,14 @@ namespace JungleAdventure
             if (Keyboard.GetState().IsKeyDown(Keys.A) || Keyboard.GetState().IsKeyDown(Keys.Left))
             {
                 left = true;
+                lastInputRight = false;
                 spriteEffects = SpriteEffects.FlipHorizontally;
             }
             else { left = false; }
             if (Keyboard.GetState().IsKeyDown(Keys.D) || Keyboard.GetState().IsKeyDown(Keys.Right))
             {
                 right = true;
+                lastInputRight = true;
                 spriteEffects = SpriteEffects.None;
             }
             else { right = false; }
@@ -417,16 +473,14 @@ namespace JungleAdventure
                 up = true;
             }
             else { up = false; }
-            if (Keyboard.GetState().IsKeyDown(Keys.S) || Keyboard.GetState().IsKeyDown(Keys.Down) || Keyboard.GetState().IsKeyDown(Keys.Space) && !left && !right)
+            if (Keyboard.GetState().IsKeyDown(Keys.S) || Keyboard.GetState().IsKeyDown(Keys.Down) || Keyboard.GetState().IsKeyDown(Keys.Space) && !left && !right && !inAir)
             {
                 shoot = true;
             }
-            else { shoot = false; }
-            if(Keyboard.GetState().IsKeyDown(Keys.R))
-            {
-                playerX = 300;
-                playerY = 64;
-                gravity = 0;
+            else 
+            { 
+                shoot = false;
+                readyToFire = true;
             }
 
             if (Keyboard.GetState().IsKeyDown(Keys.C))
@@ -468,7 +522,7 @@ namespace JungleAdventure
             {
                 jumpTicks++;
             }
-            else if (gravity >= 0) //if player starts falling whip again - reset jumpTick tracker
+            else if (gravity >= 0) //if player starts falling - reset jumpTick tracker
             {
                 jumpTicks = 0;
             }
@@ -484,23 +538,29 @@ namespace JungleAdventure
             //move player according to gravity's value
             playerY += gravity;
         }
-        public void Whip(GameTime gameTime)
+        public void Shoot(GameTime gameTime)
         {
-            if(shootTimer > shootThreshold)
-            {
-                Block b = new Block(playerX + playerWidth, playerY + playerHeight / 2, spriteSheet, dirtBlock);
-                b.DrawBlock(spriteBatch);
-            }
-
-            if (shoot)
-            {
-                shootTimer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
-            }
-            else
+            if (!shoot || !readyToFire) //Do nothing if player doesn't shoot or isnt ready to fire
             {
                 shootTimer = 0;
+                return; 
+            } 
+
+            if (bulletAmount <= 0) //Do nothing if player has no bullets left
+            {
                 return;
             }
+
+            if (shootTimer > shootThreshold)
+            {
+                //Shoot bullet after loading the gun
+                liBullets.Add(new Bullet(playerX + playerWidth / 2 - worldOffsetX - bullet.bulletWidth / 2, playerY + playerHeight / 2 - 6, spriteSheet, new Rectangle(352, 224, bullet.bulletWidth, bullet.bulletHeight), lastInputRight));
+                bulletAmount--;
+                readyToFire = false;
+                return;
+            }
+            shootTimer += (float)gameTime.ElapsedGameTime.TotalMilliseconds;
+
         }
         public void SetPlayerMovementBounds()
         {
@@ -600,7 +660,7 @@ namespace JungleAdventure
                         case 10:
                             //Already handled somewhere else
                             break;
-                        case 11:
+                        case 11: //Spike
                             spike = new Spike(x * baseTile.tileWidth + worldOffsetX, y * baseTile.tileHeight, spriteSheet, liBlockID[6]);
                             spike.DrawBlock(spriteBatch);
                             liSpikes.Add(spike);
@@ -613,18 +673,60 @@ namespace JungleAdventure
         public void DrawPlayer()
         {
             player = new Rectangle(playerX, playerY, playerWidth, playerHeight);
-            spriteBatch.Draw(spriteSheet, player, sourcePlayer[playerAnimationIndex], Color.White, 0, new Vector2(0, 0), spriteEffects, 0);
+
+            if (isInvincible) //Player took damage
+            {
+                if (damageAnimationInvisFrame <= 4) //Let user know that player was hit -> blinking
+                {
+                    damageAnimationInvisFrame ++;
+                    spriteBatch.Draw(spriteSheet, player, sourcePlayer[playerAnimationIndex], Color.White, 0, new Vector2(0, 0), spriteEffects, 0);
+                }
+                else
+                {
+                    damageAnimationInvisFrame = 0;
+                }
+            }
+            else if(shoot && readyToFire && bulletAmount != 0)
+            {
+                //Draw Player
+                if(shootingAnimationIndex >= 21)
+                {
+                    spriteBatch.Draw(spriteSheet, player, shootingPlayer[3], Color.White, 0, new Vector2(0, 0), spriteEffects, 0);
+                }
+                else if (shootingAnimationIndex >= 14)
+                {
+                    spriteBatch.Draw(spriteSheet, player, shootingPlayer[2], Color.White, 0, new Vector2(0, 0), spriteEffects, 0);
+                }
+                else if (shootingAnimationIndex >= 7)
+                {
+                    spriteBatch.Draw(spriteSheet, player, shootingPlayer[1], Color.White, 0, new Vector2(0, 0), spriteEffects, 0);
+                }
+                else if (shootingAnimationIndex >= 0)
+                {
+                    spriteBatch.Draw(spriteSheet, player, shootingPlayer[0], Color.White, 0, new Vector2(0, 0), spriteEffects, 0);
+                }
+
+                //Next Animation Frame
+                shootingAnimationIndex++;
+            }
+            else
+            {
+                //Draw Player - normal state
+                spriteBatch.Draw(spriteSheet, player, sourcePlayer[playerAnimationIndex], Color.White, 0, new Vector2(0, 0), spriteEffects, 0);
+                shootingAnimationIndex = 0;
+            }
+
+            
         }
-
-        #endregion
-
         public void DrawScoreAndLifes()
         {
-            spriteBatch.Draw(this.spriteSheet, new Rectangle(0,0,4*32,3*32), new Rectangle(8*32, 6*32, 4*32, 3*32), Color.White);
+            spriteBatch.Draw(this.spriteSheet, new Rectangle(0, 0, 4 * 32, 3 * 32), new Rectangle(8 * 32, 6 * 32, 4 * 32, 3 * 32), Color.White);
 
-            spriteBatch.DrawString(font, "Lifes: " + life, new Vector2(30, 20), Color.Black);
-            spriteBatch.DrawString(font, "Score: " + score, new Vector2(30, 45), Color.Black);
+            spriteBatch.DrawString(font, "Lifes: " + life, new Vector2(25, 20), Color.Black);
+            spriteBatch.DrawString(font, "Score: " + score, new Vector2(25, 40), Color.Black);
+            spriteBatch.DrawString(font, "Bullets: " + bulletAmount, new Vector2(25, 60), Color.Black);
         }
+        #endregion
 
         #region Animation
         public void AnimationLoadContent()
@@ -642,6 +744,12 @@ namespace JungleAdventure
             sourcePlayer[4] = new Rectangle(128, 105, 32, playerHeight);
             sourcePlayer[5] = new Rectangle(160, 105, 32, playerHeight);
             sourcePlayer[6] = new Rectangle(192, 105, 32, playerHeight);
+
+            shootingPlayer = new Rectangle[4];
+            shootingPlayer[0] = new Rectangle(0, 169, 32, playerHeight);
+            shootingPlayer[1] = new Rectangle(32, 169, 32, playerHeight);
+            shootingPlayer[2] = new Rectangle(64, 169, 32, playerHeight);
+            shootingPlayer[3] = new Rectangle(96, 169, 32, playerHeight);
 
             sourceCoins = new Rectangle[6];
             sourceCoins[0] = new Rectangle(0, 64, baseTile.tileWidth, baseTile.tileHeight);
@@ -666,7 +774,7 @@ namespace JungleAdventure
             if (timer > threshold) 
             {
                 //Player Animation
-                if(!right && !left)
+                if (!right && !left)
                 {
                     if (lastInputRight)
                     {

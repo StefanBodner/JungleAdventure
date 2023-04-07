@@ -7,8 +7,8 @@ namespace JungleAdventure.Blocks
     {
         public int tileX { get; set; }
         public int tileY { get; set; }
-        public int tileWidth = 32;
-        public int tileHeight = 32;
+        public int tileWidth = 64;
+        public int tileHeight = 96;
         public Texture2D spriteSheet;
         public Rectangle r;
         public Rectangle textureCoordinates;
