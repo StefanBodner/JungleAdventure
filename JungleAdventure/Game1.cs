@@ -1,6 +1,6 @@
 ﻿using JungleAdventure.Blocks;
 using JungleAdventure.Enemies;
-using JungleAdventure.Player;
+using JungleAdventure.PlayerFolder;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -14,12 +14,15 @@ namespace JungleAdventure
     public class Game1 : Game
     {
         #region Variables
+        //Monogame visualization
         private GraphicsDeviceManager graphics;
         private SpriteBatch spriteBatch;
         private SpriteFont font;
 
+        //List to store blocks
         static List<Rectangle> liBlockID = new List<Rectangle>();
 
+        //Lists of Elements
         static List<Block> liBlocks = new List<Block>();
         static List<Slope> liSlopes = new List<Slope>();
         static List<Spike> liSpikes = new List<Spike>();
@@ -27,42 +30,38 @@ namespace JungleAdventure
         static List<Zombie> liZombie = new List<Zombie>();
         static List<Bullet> liBullets = new List<Bullet>();
         
+        //Create BaseTypes of Classes to access variables
         Texture2D spriteSheet;
         Texture2D background;
         BaseTile baseTile = new BaseTile() { };
         Zombie baseZombie = new Zombie() { };
         Bullet bullet = new Bullet() { };
+        Player p = new Player() { };
 
+        //Player TODO: remove
         private Rectangle player;
-        private int playerSpeed = 3;
-        private int playerHeight = 55;
-        private int playerWidth = 32;
         private int playerX = 490;
         private int playerY = 64;
-        public int jumpTicks = 0;
-        public int minJumpTicks = 5;
-        public int force = -17;
-        public int gravity = 0;
 
-        bool isInvincible = false;
+        //Timer for Damage Animation
         float damageTimer = 0;
         float damageThreshold = 1500;
         int damageAnimationInvisFrame;
-        
-        public bool inAir = true;
-        public bool headroom = true;
 
+        //User input 
         public bool left;
         public bool right;
         public bool up;
         public bool shoot;
 
+        //Timer for Shooting ability
         int shootingAnimationIndex;
         float shootTimer;
         float shootThreshold = 500;
-        int bulletAmount = 6;
-        bool readyToFire = true;
 
+
+        bool readyToFire = true;
+        int bulletAmount = 6;
         int score = 0;
         int life = 3;
 
@@ -243,21 +242,21 @@ namespace JungleAdventure
         #region Collision
         public void SetCollision()
         {
-            colBottom = new Rectangle(playerX, playerY + playerHeight, playerWidth, playerSpeed); //Bottom Collision
-            colTop = new Rectangle(playerX, playerY + gravity, playerWidth, playerSpeed); //Top Collision
-            colLeft = new Rectangle(playerX - playerSpeed, playerY, playerSpeed, playerHeight); // Left Collision
-            colLeftTop = new Rectangle(playerX - playerSpeed, playerY, playerSpeed, baseTile.tileHeight / 2); // Left Bottom Collision
-            colRight = new Rectangle(playerX + playerWidth, playerY, playerSpeed, playerHeight); // Right Collision
-            colRightTop = new Rectangle(playerX + playerWidth, playerY, playerSpeed, baseTile.tileHeight / 2); // Right Bottom Collision
-            colBottomCenter = new Rectangle(playerX + playerWidth / 2, playerY + playerHeight - 2, 1, 1); //Bottom Center Collision
-            colBelowBottomCenter = new Rectangle(playerX + playerWidth / 2, playerY + playerHeight + baseTile.tileHeight / 2, 1, 1); //Bottom Center Collision
+            colBottom = new Rectangle(playerX, playerY + p.height, p.width, p.speed); //Bottom Collision
+            colTop = new Rectangle(playerX, playerY + p.gravity, p.width, p.speed); //Top Collision
+            colLeft = new Rectangle(playerX - p.speed, playerY, p.speed, p.height); // Left Collision
+            colLeftTop = new Rectangle(playerX - p.speed, playerY, p.speed, baseTile.tileHeight / 2); // Left Bottom Collision
+            colRight = new Rectangle(playerX + p.width, playerY, p.speed, p.height); // Right Collision
+            colRightTop = new Rectangle(playerX + p.width, playerY, p.speed, baseTile.tileHeight / 2); // Right Bottom Collision
+            colBottomCenter = new Rectangle(playerX + p.width / 2, playerY + p.height - 2, 1, 1); //Bottom Center Collision
+            colBelowBottomCenter = new Rectangle(playerX + p.width / 2, playerY + p.height + baseTile.tileHeight / 2, 1, 1); //Bottom Center Collision
         }
         private void CheckCollisionPlayer(GameTime gameTime)
         {
             SetCollision();
             
-            inAir = true;
-            headroom = true;
+            p.inAir = true;
+            p.headroom = true;
             canMoveToTheLeft = true;
             canMoveToTheRight = true;
             bool onSlope = false;
@@ -275,20 +274,20 @@ namespace JungleAdventure
             foreach (Slope s in liSlopes)
             {
                 //Check if Player stands on Slope
-                if (colBelowBottomCenter.Intersects(s.r) && gravity >= 0)
+                if (colBelowBottomCenter.Intersects(s.r) && p.gravity >= 0)
                 {
-                    inAir = false;
-                    playerY = s.CalcPlayerBottomCenterY(new Point(colBelowBottomCenter.Left - worldOffsetX, colBelowBottomCenter.Top)) - playerHeight;
-                    gravity = 0;
+                    p.inAir = false;
+                    playerY = s.CalcPlayerBottomCenterY(new Point(colBelowBottomCenter.Left - worldOffsetX, colBelowBottomCenter.Top)) - p.height;
+                    p.gravity = 0;
                     SetCollision();
                     onSlope = true;
                 }
                 //Check if Player touches Slope
-                else if (colBottomCenter.Intersects(s.r) && gravity >= 0)
+                else if (colBottomCenter.Intersects(s.r) && p.gravity >= 0)
                 {
-                    inAir = false;
-                    playerY = s.CalcPlayerBottomCenterY(new Point(colBottomCenter.Left - worldOffsetX, colBottomCenter.Top)) - playerHeight;
-                    gravity = 0;
+                    p.inAir = false;
+                    playerY = s.CalcPlayerBottomCenterY(new Point(colBottomCenter.Left - worldOffsetX, colBottomCenter.Top)) - p.height;
+                    p.gravity = 0;
                     SetCollision();
                     onSlope = true;
                 }
@@ -299,15 +298,15 @@ namespace JungleAdventure
             {
                 if (colBottom.Intersects(b.r) && !onSlope)
                 {
-                    inAir = false;
-                    playerY = b.r.Top - playerHeight;
-                    gravity = 0;
+                    p.inAir = false;
+                    playerY = b.r.Top - p.height;
+                    p.gravity = 0;
                     SetCollision();
                 }
-                if (colTop.Intersects(b.r) && gravity < 0)
+                if (colTop.Intersects(b.r) && p.gravity < 0)
                 {
-                    headroom = false;
-                    gravity = 0;
+                    p.headroom = false;
+                    p.gravity = 0;
                     playerY = b.r.Bottom;
                     SetCollision();
                 }
@@ -320,7 +319,7 @@ namespace JungleAdventure
                 if ((colRight.Intersects(b.r) && !onSlope) || (colRightTop.Intersects(b.r) && onSlope))
                 {
                     canMoveToTheRight = false;
-                    playerX = b.r.Left - playerWidth;
+                    playerX = b.r.Left - p.width;
                     SetCollision();
                 }
             }
@@ -353,7 +352,7 @@ namespace JungleAdventure
                 }
             }
             
-            if (isInvincible)
+            if (p.isInvincible)
             {
                 if (damageTimer < damageThreshold)
                 {
@@ -362,7 +361,7 @@ namespace JungleAdventure
                 }
                 else
                 {
-                    isInvincible = false;
+                    p.isInvincible = false;
                     damageTimer = 0;
                 }
             }
@@ -439,10 +438,10 @@ namespace JungleAdventure
         }
         private void RemoveLife()
         {
-            if (!isInvincible)
+            if (!p.isInvincible)
             {
                 life--;
-                isInvincible = true;
+                p.isInvincible = true;
             }
         }
         #endregion
@@ -473,7 +472,7 @@ namespace JungleAdventure
                 up = true;
             }
             else { up = false; }
-            if (Keyboard.GetState().IsKeyDown(Keys.S) || Keyboard.GetState().IsKeyDown(Keys.Down) || Keyboard.GetState().IsKeyDown(Keys.Space) && !left && !right && !inAir)
+            if (Keyboard.GetState().IsKeyDown(Keys.S) || Keyboard.GetState().IsKeyDown(Keys.Down) || Keyboard.GetState().IsKeyDown(Keys.Space) && !left && !right && !p.inAir)
             {
                 shoot = true;
             }
@@ -493,50 +492,50 @@ namespace JungleAdventure
             //basic left & right movement
             if (left && canMoveToTheLeft && !touchesBorderLeft)
             {
-                playerX -= playerSpeed;
+                playerX -= p.speed;
             }
             else if (right && canMoveToTheRight && !touchesBorderRight)
             {
-                playerX += playerSpeed;
+                playerX += p.speed;
             }
 
             //allow player to jump
-            if (up && !inAir)
+            if (up && !p.inAir)
             {
-                inAir = true;
-                gravity = force;
+                p.inAir = true;
+                p.gravity = p.force;
             }
 
             //check if player touches the floor
-            if (inAir)
+            if (p.inAir)
             {
-                gravity += 1;
+                p.gravity += 1;
             }
-            else if (!inAir)
+            else if (!p.inAir)
             {
-                gravity = 0;
+                p.gravity = 0;
             }
 
             //track jumping duration
-            if (gravity < 0)
+            if (p.gravity < 0)
             {
-                jumpTicks++;
+                p.jumpTicks++;
             }
-            else if (gravity >= 0) //if player starts falling - reset jumpTick tracker
+            else if (p.gravity >= 0) //if player starts falling - reset jumpTick tracker
             {
-                jumpTicks = 0;
+                p.jumpTicks = 0;
             }
 
             //Prevent player from going higher
-            if (!up && gravity < 0 && jumpTicks >= minJumpTicks)
+            if (!up && p.gravity < 0 && p.jumpTicks >= p.minJumpTicks)
             {
                 //-3 because of smoother jumping curve - not an aprupt stop in velocity
-                gravity = -3;
-                jumpTicks = 0;
+                p.gravity = -3;
+                p.jumpTicks = 0;
             }
 
-            //move player according to gravity's value
-            playerY += gravity;
+            //move player according to p.gravity's value
+            playerY += p.gravity;
         }
         public void Shoot(GameTime gameTime)
         {
@@ -554,7 +553,7 @@ namespace JungleAdventure
             if (shootTimer > shootThreshold)
             {
                 //Shoot bullet after loading the gun
-                liBullets.Add(new Bullet(playerX + playerWidth / 2 - worldOffsetX - bullet.bulletWidth / 2, playerY + playerHeight / 2 - 6, spriteSheet, new Rectangle(352, 224, bullet.bulletWidth, bullet.bulletHeight), lastInputRight));
+                liBullets.Add(new Bullet(playerX + p.width / 2 - worldOffsetX - bullet.bulletWidth / 2, playerY + p.height / 2 - 6, spriteSheet, new Rectangle(352, 224, bullet.bulletWidth, bullet.bulletHeight), lastInputRight));
                 bulletAmount--;
                 readyToFire = false;
                 return;
@@ -564,7 +563,7 @@ namespace JungleAdventure
         }
         public void SetPlayerMovementBounds()
         {
-            if (playerX + playerWidth > borderRight)
+            if (playerX + p.width > borderRight)
             {
                 touchesBorderRight = true;
             }
@@ -586,11 +585,11 @@ namespace JungleAdventure
         {
             if (touchesBorderLeft && left)
             {
-                worldOffsetX += playerSpeed;
+                worldOffsetX += p.speed;
             }
             else if (touchesBorderRight && right)
             {
-                worldOffsetX -= playerSpeed;
+                worldOffsetX -= p.speed;
             }
         }
         public void DrawWorld()
@@ -672,9 +671,9 @@ namespace JungleAdventure
         }
         public void DrawPlayer()
         {
-            player = new Rectangle(playerX, playerY, playerWidth, playerHeight);
+            player = new Rectangle(playerX, playerY, p.width, p.height);
 
-            if (isInvincible) //Player took damage
+            if (p.isInvincible) //Player took damage
             {
                 if (damageAnimationInvisFrame <= 4) //Let user know that player was hit -> blinking
                 {
@@ -737,19 +736,19 @@ namespace JungleAdventure
             threshold = 100;
 
             sourcePlayer = new Rectangle[7];
-            sourcePlayer[0] = new Rectangle(0, 105, 32, playerHeight);
-            sourcePlayer[1] = new Rectangle(32, 105, 32, playerHeight);
-            sourcePlayer[2] = new Rectangle(64, 105, 32, playerHeight);
-            sourcePlayer[3] = new Rectangle(96, 105, 32, playerHeight);
-            sourcePlayer[4] = new Rectangle(128, 105, 32, playerHeight);
-            sourcePlayer[5] = new Rectangle(160, 105, 32, playerHeight);
-            sourcePlayer[6] = new Rectangle(192, 105, 32, playerHeight);
+            sourcePlayer[0] = new Rectangle(0, 105, 32, p.height);
+            sourcePlayer[1] = new Rectangle(32, 105, 32, p.height);
+            sourcePlayer[2] = new Rectangle(64, 105, 32, p.height);
+            sourcePlayer[3] = new Rectangle(96, 105, 32, p.height);
+            sourcePlayer[4] = new Rectangle(128, 105, 32, p.height);
+            sourcePlayer[5] = new Rectangle(160, 105, 32, p.height);
+            sourcePlayer[6] = new Rectangle(192, 105, 32, p.height);
 
             shootingPlayer = new Rectangle[4];
-            shootingPlayer[0] = new Rectangle(0, 169, 32, playerHeight);
-            shootingPlayer[1] = new Rectangle(32, 169, 32, playerHeight);
-            shootingPlayer[2] = new Rectangle(64, 169, 32, playerHeight);
-            shootingPlayer[3] = new Rectangle(96, 169, 32, playerHeight);
+            shootingPlayer[0] = new Rectangle(0, 169, 32, p.height);
+            shootingPlayer[1] = new Rectangle(32, 169, 32, p.height);
+            shootingPlayer[2] = new Rectangle(64, 169, 32, p.height);
+            shootingPlayer[3] = new Rectangle(96, 169, 32, p.height);
 
             sourceCoins = new Rectangle[6];
             sourceCoins[0] = new Rectangle(0, 64, baseTile.tileWidth, baseTile.tileHeight);

@@ -1,7 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace JungleAdventure.Player
+namespace JungleAdventure.PlayerFolder
 {
     internal class Bullet
     {
